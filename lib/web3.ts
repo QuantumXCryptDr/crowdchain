@@ -1,0 +1,152 @@
+import { ethers } from "ethers"
+
+export const CONTRACT_ADDRESS = "0x1D6FB3A2F9928E84d8D0f7E695869b03Ed158816" // Update this after deployment
+
+export const CONTRACT_ABI = [
+  // Add the full ABI here after compilation
+  "function createCampaign(string memory _title, string memory _description, string memory _imageUrl, uint256 _goalAmount, uint256 _deadline) external returns (uint256)",
+  "function contribute(uint256 _campaignId) external payable",
+  "function getCampaignDetails(uint256 _campaignId) external view returns (uint256, address, string, string, string, uint256, uint256, uint256, uint8, bool, uint256)",
+  "function getUserContribution(uint256 _campaignId, address _user) external view returns (uint256)",
+  "function requestRefund(uint256 _campaignId) external",
+  "function createMilestone(uint256 _campaignId, string memory _description, uint256 _amount, uint256 _deadline) external",
+  "function voteOnMilestone(uint256 _campaignId, uint256 _milestoneId, bool _vote) external",
+  "function releaseMilestoneFunds(uint256 _campaignId, uint256 _milestoneId) external",
+  "function enablePremiumFeatures(uint256 _campaignId) external payable",
+  "function campaignCounter() external view returns (uint256)",
+  "event CampaignCreated(uint256 indexed campaignId, address indexed creator, string title, uint256 goalAmount)",
+  "event ContributionMade(uint256 indexed campaignId, address indexed contributor, uint256 amount)",
+]
+
+export const getProvider = () => {
+  if (typeof window !== "undefined" && window.ethereum) {
+    return new ethers.BrowserProvider(window.ethereum)
+  }
+  return null
+}
+
+export const getSigner = async () => {
+  const provider = getProvider()
+  if (provider) {
+    return await provider.getSigner()
+  }
+  return null
+}
+
+export const getContract = async () => {
+  try {
+    // Check if we're in the browser
+    if (typeof window === "undefined") {
+      return null
+    }
+
+    const provider = getProvider()
+    if (!provider) {
+      return null // Don't throw error, just return null
+    }
+
+    // Check if wallet is connected first
+    const connected = await isWalletConnected()
+    if (!connected) {
+      return null // Don't throw error, just return null
+    }
+
+    // Request account access if needed
+    await provider.send("eth_requestAccounts", [])
+    const signer = await provider.getSigner()
+
+    if (!isContractDeployed()) {
+      console.warn("Contract not deployed yet")
+      return null // Don't throw error, just return null
+    }
+
+    return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+  } catch (error) {
+    console.error("Error getting contract:", error)
+    return null // Return null instead of throwing
+  }
+}
+
+export const connectWallet = async () => {
+  if (typeof window !== "undefined" && window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
+
+      // Check if we're on the correct network (Sepolia)
+      const chainId = await window.ethereum.request({ method: "eth_chainId" })
+      const sepoliaChainId = "0xaa36a7" // 11155111 in hex
+
+      if (chainId !== sepoliaChainId) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: sepoliaChainId }],
+          })
+        } catch (switchError: any) {
+          // This error code indicates that the chain has not been added to MetaMask
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: sepoliaChainId,
+                  chainName: "Sepolia Test Network",
+                  nativeCurrency: {
+                    name: "ETH",
+                    symbol: "ETH",
+                    decimals: 18,
+                  },
+                  rpcUrls: ["https://sepolia.infura.io/v3/"],
+                  blockExplorerUrls: ["https://sepolia.etherscan.io/"],
+                },
+              ],
+            })
+          }
+        }
+      }
+
+      return accounts.length > 0
+    } catch (error) {
+      console.error("Failed to connect wallet:", error)
+      return false
+    }
+  }
+  return false
+}
+
+export const isWalletConnected = async () => {
+  // Check if we're in the browser
+  if (typeof window === "undefined") {
+    return false
+  }
+
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: "eth_accounts" })
+      return accounts.length > 0
+    } catch (error) {
+      console.error("Error checking wallet connection:", error)
+      return false
+    }
+  }
+  return false
+}
+
+export const formatEther = (value: string) => {
+  return ethers.formatEther(value)
+}
+
+export const parseEther = (value: string) => {
+  return ethers.parseEther(value)
+}
+
+export const isContractDeployed = () => {
+  return (
+    CONTRACT_ADDRESS &&
+    CONTRACT_ADDRESS !== "" &&
+    CONTRACT_ADDRESS !== "0x..." &&
+    CONTRACT_ADDRESS !== "PASTE_YOUR_DEPLOYED_ADDRESS_HERE"
+  )
+}
