@@ -116,18 +116,18 @@ export default function HomePage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-purple-800/30 bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">CrowdChain</h1>
+            <Shield className="h-8 w-8 text-purple-400" />
+            <h1 className="text-2xl font-bold text-white">CrowdChain</h1>
           </div>
           <div className="flex items-center space-x-4">
             <Link href="/dashboard">
               <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
-                Dashboard
+                Analytics
               </Button>
             </Link>
             <Link href="/withdraw">
@@ -136,18 +136,18 @@ export default function HomePage() {
               </Button>
             </Link>
             <Link href="/create">
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-purple-600 hover:bg-purple-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Campaign
               </Button>
             </Link>
             {!isConnected ? (
-              <Button onClick={handleConnectWallet} variant="outline">
+              <Button onClick={handleConnectWallet} variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-900/20">
                 <Wallet className="h-4 w-4 mr-2" />
                 Connect Wallet
               </Button>
             ) : (
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
+              <Badge variant="secondary" className="bg-purple-600 text-white">
                 <Wallet className="h-3 w-3 mr-1" />
                 Connected
               </Badge>
@@ -159,35 +159,35 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="py-20 text-center">
         <div className="container mx-auto px-4">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">Decentralized Crowdfunding</h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Transparent, Secure, And Fee-Efficient Fundraising Powered By Blockchain Technology. Support Cause You
-            Believe In Complete Transparency And Milestone-Based Fund Releases.
+          <h2 className="text-5xl font-bold text-white mb-6">Decentralized Crowdfunding</h2>
+          <p className="text-xl text-purple-200 mb-8 max-w-3xl mx-auto">
+            Transparent, Secure, And Fee-Efficient Fundraising Powered By Blockchain Technology. Support Causes You
+            Believe In With Complete Transparency And Milestone-Based Fund Releases.
           </p>
           <div className="flex justify-center space-x-8 mb-12">
             <div className="text-center">
-              <TrendingUp className="h-12 w-12 text-blue-600 mx-auto mb-2" />
-              <h3 className="font-semibold">Low Fees</h3>
-              <p className="text-gray-600">Only 2% platform fee</p>
+              <TrendingUp className="h-12 w-12 text-purple-400 mx-auto mb-2" />
+              <h3 className="font-semibold text-white">Low Fees</h3>
+              <p className="text-purple-300">Only 2% platform fee</p>
             </div>
             <div className="text-center">
-              <Shield className="h-12 w-12 text-blue-600 mx-auto mb-2" />
-              <h3 className="font-semibold">Transparent</h3>
-              <p className="text-gray-600">All transactions on-chain</p>
+              <Shield className="h-12 w-12 text-purple-400 mx-auto mb-2" />
+              <h3 className="font-semibold text-white">Transparent</h3>
+              <p className="text-purple-300">All transactions on-chain</p>
             </div>
             <div className="text-center">
-              <Users className="h-12 w-12 text-blue-600 mx-auto mb-2" />
-              <h3 className="font-semibold">Community Driven</h3>
-              <p className="text-gray-600">Milestone voting system</p>
+              <Users className="h-12 w-12 text-purple-400 mx-auto mb-2" />
+              <h3 className="font-semibold text-white">Community Driven</h3>
+              <p className="text-purple-300">Milestone voting system</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Active Campaigns */}
-      <section className="py-16">
+      <section className="py-16 bg-slate-800/50">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-center mb-12">Active Campaigns</h3>
+          <h3 className="text-3xl font-bold text-center mb-12 text-white">Active Campaigns</h3>
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

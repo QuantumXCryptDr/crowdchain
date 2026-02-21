@@ -21,7 +21,7 @@ interface CampaignFund {
   creatorAmount: string
 }
 
-export default function FundFlowDashboard() {
+export default function AnalyticsDashboard() {
   const [campaigns, setCampaigns] = useState<CampaignFund[]>([])
   const [loading, setLoading] = useState(true)
   const [isConnected, setIsConnected] = useState(false)
@@ -140,22 +140,22 @@ export default function FundFlowDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <header className="border-b border-purple-800/30 bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/">
-            <Button variant="ghost" className="mb-0">
+            <Button variant="ghost" className="mb-0 text-purple-400 hover:text-purple-300">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Fund Flow Dashboard</h1>
+          <h1 className="text-2xl font-bold text-white">Analytics & Fund Flow</h1>
           {!isConnected ? (
-            <Button onClick={handleConnectWallet} variant="outline">
+            <Button onClick={handleConnectWallet} className="bg-purple-600 hover:bg-purple-700">
               Connect Wallet
             </Button>
           ) : (
-            <Badge variant="outline" className="bg-green-50">
+            <Badge variant="outline" className="bg-purple-600 text-white border-purple-400">
               Connected
             </Badge>
           )}

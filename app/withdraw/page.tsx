@@ -25,7 +25,7 @@ interface SuccessfulCampaign {
   withdrawableAmount: string
 }
 
-export default function WithdrawalDashboard() {
+export default function CreatorWithdrawalPortal() {
   const [campaigns, setCampaigns] = useState<SuccessfulCampaign[]>([])
   const [userAddress, setUserAddress] = useState("")
   const [selectedCampaign, setSelectedCampaign] = useState<SuccessfulCampaign | null>(null)
@@ -247,17 +247,17 @@ export default function WithdrawalDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <header className="border-b border-purple-800/30 bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/">
-            <Button variant="ghost" className="mb-0">
+            <Button variant="ghost" className="mb-0 text-purple-400 hover:text-purple-300">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Campaign Withdrawal Dashboard</h1>
-          <Badge variant="outline" className="bg-green-50">
+          <h1 className="text-2xl font-bold text-white">Creator Withdrawal Portal</h1>
+          <Badge variant="outline" className="bg-purple-600 text-white border-purple-400">
             {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
           </Badge>
         </div>

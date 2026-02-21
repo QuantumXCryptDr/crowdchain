@@ -135,17 +135,17 @@ export default function CreateCampaignPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/">
-            <Button variant="ghost" className="mb-4">
+            <Button variant="ghost" className="mb-4 text-purple-400 hover:text-purple-300">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Campaign</h1>
-          <p className="text-gray-600 mt-2">Launch your crowdfunding campaign on the blockchain</p>
+          <h1 className="text-3xl font-bold text-white">Create New Campaign</h1>
+          <p className="text-purple-300 mt-2">Launch your crowdfunding campaign on the blockchain</p>
         </div>
 
         <div className="max-w-2xl mx-auto">
@@ -158,13 +158,13 @@ export default function CreateCampaignPage() {
             </CardHeader>
             <CardContent>
               {!isConnected && (
-                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="mb-6 p-4 bg-yellow-900/30 border border-yellow-600/50 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-yellow-800">Wallet Not Connected</h3>
-                      <p className="text-sm text-yellow-700">You need to connect your wallet to create a campaign</p>
+                      <h3 className="font-semibold text-yellow-300">Wallet Not Connected</h3>
+                      <p className="text-sm text-yellow-200">You need to connect your wallet to create a campaign</p>
                     </div>
-                    <Button onClick={handleConnectWallet} disabled={isCheckingConnection}>
+                    <Button onClick={handleConnectWallet} disabled={isCheckingConnection} className="bg-purple-600 hover:bg-purple-700">
                       {isCheckingConnection ? "Checking..." : "Connect Wallet"}
                     </Button>
                   </div>
