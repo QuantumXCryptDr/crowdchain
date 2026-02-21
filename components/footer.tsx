@@ -53,11 +53,11 @@ export function Footer() {
                 className="inline-flex items-center space-x-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
               >
                 <Image 
-                  src="/cyrene-ai-logo.svg" 
+                  src="/logos/cyrene-ai-logo.png" 
                   alt="Cyrene AI Logo"
                   width={24}
                   height={24}
-                  className="w-6 h-6"
+                  className="w-6 h-6 rounded-full"
                 />
                 <span className="font-medium">Cyrene AI</span>
               </a>
@@ -68,11 +68,11 @@ export function Footer() {
                 className="inline-flex items-center space-x-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
               >
                 <Image 
-                  src="/solana-logo.svg" 
+                  src="/logos/solana-logo.png" 
                   alt="Solana Logo"
                   width={24}
                   height={24}
-                  className="w-6 h-6"
+                  className="w-6 h-6 rounded-full"
                 />
                 <span className="font-medium">Solana</span>
               </a>
@@ -90,22 +90,22 @@ export function Footer() {
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="flex items-center space-x-2">
                 <Image 
-                  src="/cyrene-ai-logo.svg" 
+                  src="/logos/cyrene-ai-logo.png" 
                   alt="Cyrene AI"
                   width={20}
                   height={20}
-                  className="w-5 h-5 opacity-70"
+                  className="w-5 h-5 opacity-70 rounded-full"
                 />
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Cyrene AI</span>
               </div>
               <span className="text-slate-300 dark:text-slate-700">&</span>
               <div className="flex items-center space-x-2">
                 <Image 
-                  src="/solana-logo.svg" 
+                  src="/logos/solana-logo.png" 
                   alt="Solana"
                   width={20}
                   height={20}
-                  className="w-5 h-5 opacity-70"
+                  className="w-5 h-5 opacity-70 rounded-full"
                 />
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Solana</span>
               </div>
