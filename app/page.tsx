@@ -125,6 +125,16 @@ export default function HomePage() {
             <h1 className="text-2xl font-bold text-gray-900">CrowdChain</h1>
           </div>
           <div className="flex items-center space-x-4">
+            <Link href="/dashboard">
+              <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="/withdraw">
+              <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
+                Withdraw
+              </Button>
+            </Link>
             <Link href="/create">
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="h-4 w-4 mr-2" />
