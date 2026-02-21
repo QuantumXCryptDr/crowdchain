@@ -1,4 +1,5 @@
 import React from "react"
+import Image from "next/image"
 
 export function Footer() {
   return (
@@ -44,24 +45,36 @@ export function Footer() {
           {/* Collaborators */}
           <div>
             <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Collaborators</h4>
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-3">
               <a 
                 href="https://cyreneai.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                className="inline-flex items-center space-x-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
               >
-                <span className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">C</span>
-                <span>Cyrene AI</span>
+                <Image 
+                  src="/cyrene-ai-logo.svg" 
+                  alt="Cyrene AI Logo"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <span className="font-medium">Cyrene AI</span>
               </a>
               <a 
                 href="https://solana.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                className="inline-flex items-center space-x-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
               >
-                <span className="w-5 h-5 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-xs font-bold">S</span>
-                <span>Solana</span>
+                <Image 
+                  src="/solana-logo.svg" 
+                  alt="Solana Logo"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <span className="font-medium">Solana</span>
               </a>
             </div>
           </div>
@@ -69,15 +82,32 @@ export function Footer() {
 
         {/* Divider */}
         <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
-          {/* Watermark/Copyright */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Watermark/Copyright with Logos */}
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
             <p className="text-xs text-slate-500 dark:text-slate-500">
               © 2026 CrowdChain. All rights reserved. Built with blockchain technology.
             </p>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1.5">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-purple-500 to-pink-500"></div>
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Powered by Cyrene AI & Solana</span>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex items-center space-x-2">
+                <Image 
+                  src="/cyrene-ai-logo.svg" 
+                  alt="Cyrene AI"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 opacity-70"
+                />
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Cyrene AI</span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700">&</span>
+              <div className="flex items-center space-x-2">
+                <Image 
+                  src="/solana-logo.svg" 
+                  alt="Solana"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 opacity-70"
+                />
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Solana</span>
               </div>
             </div>
           </div>
