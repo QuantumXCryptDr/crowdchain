@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CrowdChain - Sepolia Faucet Helper</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+    }
+    
+    h1 {
+      color: #1a1a1a;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .wallet-info {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+    
+    .wallet-label {
+      color: #666;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      font-family: system-ui;
+    }
+    
+    .copy-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 8px;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    
+    .copy-btn:hover {
+      background: #764ba2;
+    }
+    
+    .faucet-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .faucet-btn {
+      padding: 16px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .faucet-btn:hover {
+      border-color: #667eea;
+      background: #f9f9f9;
+      transform: translateY(-2px);
+    }
+    
+    .faucet-btn.primary {
+      grid-column: 1 / -1;
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+      padding: 20px;
+      font-size: 16px;
+    }
+    
+    .faucet-btn.primary:hover {
+      background: #764ba2;
+      border-color: #764ba2;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .badge.slow {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    
+    .instructions {
+      background: #e3f2fd;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .instructions h3 {
+      color: #1565c0;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    
+    .instructions ol {
+      color: #666;
+      font-size: 13px;
+      margin-left: 20px;
+      line-height: 1.6;
+    }
+    
+    .instructions li {
+      margin-bottom: 8px;
+    }
+    
+    .metamask-section {
+      background: #fff3cd;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .metamask-section h3 {
+      color: #856404;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    
+    .metamask-section p {
+      color: #856404;
+      font-size: 13px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    
+    .check-balance {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border: 2px dashed #667eea;
+      text-align: center;
+    }
+    
+    .check-balance a {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+    
+    .check-balance a:hover {
+      background: #764ba2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 CrowdChain Sepolia Setup</h1>
+    <p class="subtitle">Get test ETH for your testnet wallet</p>
+    
+    <div class="instructions">
+      <h3>⚡ Quick Start</h3>
+      <ol>
+        <li>Click the <strong>Alchemy Faucet</strong> button below</li>
+        <li>Paste your wallet address (copy button provided)</li>
+        <li>Request 0.5 ETH</li>
+        <li>Wait 1-2 minutes</li>
+        <li>Check your balance using the link below</li>
+      </ol>
+    </div>
+    
+    <div class="wallet-info">
+      <div class="wallet-label">Your Sepolia Wallet Address</div>
+      <div id="address">0x8b3dfD81484530B484964fdFBD490530edE324e3</div>
+      <button class="copy-btn" onclick="copyToClipboard('address')">📋 Copy Address</button>
+      
+      <div class="wallet-label" style="margin-top: 15px;">Private Key (Keep Secret!)</div>
+      <div id="privateKey">0x26f7d4e301245338855266999abfa9f4cb2b4f2f64490f01a40f3579d3ae636f</div>
+      <button class="copy-btn" onclick="copyToClipboard('privateKey')">📋 Copy Private Key</button>
+    </div>
+    
+    <div class="faucet-buttons">
+      <a href="https://sepoliafaucet.com" target="_blank" class="faucet-btn primary">
+        ⚡ Open Alchemy Faucet (FASTEST)
+      </a>
+      <a href="https://faucet.quicknode.com/ethereum/sepolia" target="_blank" class="faucet-btn">
+        QuickNode
+        <span class="badge slow">2-5 min</span>
+      </a>
+      <a href="https://www.infura.io/faucet/sepolia" target="_blank" class="faucet-btn">
+        Infura
+        <span class="badge">Reliable</span>
+      </a>
+    </div>
+    
+    <div class="check-balance">
+      <h3>After requesting ETH, check your balance:</h3>
+      <p>Wait 1-2 minutes, then click below to verify you received it:</p>
+      <a href="https://sepolia.etherscan.io/address/0x8b3dfD81484530B484964fdFBD490530edE324e3" target="_blank">
+        🔍 Check Balance on Etherscan
+      </a>
+    </div>
+    
+    <div class="metamask-section">
+      <h3>🦊 Add Wallet to MetaMask</h3>
+      <p><strong>1. Open MetaMask</strong> → Click account icon</p>
+      <p><strong>2. Click "Import Account"</strong></p>
+      <p><strong>3. Paste private key:</strong></p>
+      <div class="wallet-info" style="margin: 10px 0; background: white; border: 1px solid #ffc107;">
+        <div id="pkDisplay">0x26f7d4e301245338855266999abfa9f4cb2b4f2f64490f01a40f3579d3ae636f</div>
+        <button class="copy-btn" onclick="copyToClipboard('pkDisplay')" style="background: #ffc107; color: black;">📋 Copy</button>
+      </div>
+      <p><strong>4. Make sure MetaMask is set to Sepolia network</strong> (top-right dropdown)</p>
+      <p>✅ Done! You can now deploy with this wallet</p>
+    </div>
+  </div>
+  
+  <script>
+    function copyToClipboard(elementId) {
+      const element = document.getElementById(elementId);
+      const text = element.innerText;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = '✅ Copied!';
+        setTimeout(() => {
+          btn.innerText = originalText;
+        }, 2000);
+      }).catch(() => {
+        alert('Failed to copy. Please copy manually:\n\n' + text);
+      });
+    }
+  </script>
+</body>
+</html>
