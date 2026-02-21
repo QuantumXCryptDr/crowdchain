@@ -44,72 +44,81 @@ export function Footer() {
 
           {/* Collaborators */}
           <div>
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Collaborators</h4>
-            <div className="flex flex-col space-y-3">
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Collaborators & Funders</h4>
+            <div className="flex flex-col space-y-4">
               <a 
                 href="https://cyreneai.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                className="inline-flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 <Image 
-                  src="/logos/cyrene-ai-logo.png" 
+                  src="/placeholder-logo.png" 
                   alt="Cyrene AI Logo"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6 rounded-full"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
                 />
-                <span className="font-medium">Cyrene AI</span>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-slate-900 dark:text-white text-sm">Cyrene AI</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Project Funder</span>
+                </div>
               </a>
               <a 
                 href="https://solana.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition"
+                className="inline-flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 <Image 
-                  src="/logos/solana-logo.png" 
+                  src="/placeholder-logo.png" 
                   alt="Solana Logo"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6 rounded-full"
+                  width={48}
+                  height={48}
+                  className="w-12 h-12"
                 />
-                <span className="font-medium">Solana</span>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-slate-900 dark:text-white text-sm">Solana</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Blockchain Partner</span>
+                </div>
               </a>
             </div>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-slate-200 dark:border-slate-800 pt-6">
-          {/* Watermark/Copyright with Logos */}
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-slate-500 dark:text-slate-500">
-              © 2026 CrowdChain. All rights reserved. Built with blockchain technology.
+        <div className="border-t border-slate-200 dark:border-slate-800 pt-8 mt-8">
+          {/* Watermark/Copyright with Large Logos */}
+          <div className="flex flex-col items-center justify-center gap-6 bg-gradient-to-r from-purple-50 to-slate-50 dark:from-slate-900 dark:to-slate-800 rounded-lg p-6">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 text-center">
+              © 2026 CrowdChain. Proudly Powered By
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+              <div className="flex flex-col items-center gap-2">
                 <Image 
-                  src="/logos/cyrene-ai-logo.png" 
+                  src="/placeholder-logo.png" 
                   alt="Cyrene AI"
-                  width={20}
-                  height={20}
-                  className="w-5 h-5 opacity-70 rounded-full"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 drop-shadow-lg"
                 />
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Cyrene AI</span>
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-400 text-center">CYRENE AI</span>
               </div>
-              <span className="text-slate-300 dark:text-slate-700">&</span>
-              <div className="flex items-center space-x-2">
+              <div className="text-3xl text-slate-300 dark:text-slate-600">&</div>
+              <div className="flex flex-col items-center gap-2">
                 <Image 
-                  src="/logos/solana-logo.png" 
+                  src="/placeholder-logo.png" 
                   alt="Solana"
-                  width={20}
-                  height={20}
-                  className="w-5 h-5 opacity-70 rounded-full"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 drop-shadow-lg"
                 />
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Solana</span>
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-400 text-center">SOLANA</span>
               </div>
             </div>
+            <p className="text-xs text-slate-500 dark:text-slate-500 text-center">
+              Building the future of decentralized fundraising on blockchain technology
+            </p>
           </div>
         </div>
       </div>
