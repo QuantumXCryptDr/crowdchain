@@ -14,6 +14,9 @@ export const CONTRACT_ABI = [
   "function releaseMilestoneFunds(uint256 _campaignId, uint256 _milestoneId) external",
   "function enablePremiumFeatures(uint256 _campaignId) external payable",
   "function campaignCounter() external view returns (uint256)",
+  "function platformFeePercent() external view returns (uint256)",
+  "function withdrawPlatformFunds() external",
+  "function setPlatformFee(uint256 _newFeePercent) external",
   "event CampaignCreated(uint256 indexed campaignId, address indexed creator, string title, uint256 goalAmount)",
   "event ContributionMade(uint256 indexed campaignId, address indexed contributor, uint256 amount)",
 ]
@@ -149,4 +152,57 @@ export const isContractDeployed = () => {
     CONTRACT_ADDRESS !== "0x..." &&
     CONTRACT_ADDRESS !== "PASTE_YOUR_DEPLOYED_ADDRESS_HERE"
   )
+}
+
+// --- Admin helper functions ---
+export const getPlatformFeePercent = async () => {
+  try {
+    const provider = getProvider()
+    if (!provider || !isContractDeployed()) return null
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    const fee = await contract.platformFeePercent()
+    return Number(fee.toString())
+  } catch (e) {
+    console.error("getPlatformFeePercent error", e)
+    return null
+  }
+}
+
+export const getCampaignCount = async () => {
+  try {
+    const provider = getProvider()
+    if (!provider || !isContractDeployed()) return 0
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    const count = await contract.campaignCounter()
+    return Number(count.toString())
+  } catch (e) {
+    console.error("getCampaignCount error", e)
+    return 0
+  }
+}
+
+export const setPlatformFeePercent = async (newFee: number) => {
+  try {
+    const contract = await getContract()
+    if (!contract) return { success: false, message: "Wallet not connected or contract unavailable" }
+    const tx = await contract.setPlatformFee(newFee)
+    await tx.wait()
+    return { success: true }
+  } catch (e: any) {
+    console.error("setPlatformFeePercent error", e)
+    return { success: false, message: e?.message || String(e) }
+  }
+}
+
+export const withdrawPlatformFunds = async () => {
+  try {
+    const contract = await getContract()
+    if (!contract) return { success: false, message: "Wallet not connected or contract unavailable" }
+    const tx = await contract.withdrawPlatformFunds()
+    await tx.wait()
+    return { success: true }
+  } catch (e: any) {
+    console.error("withdrawPlatformFunds error", e)
+    return { success: false, message: e?.message || String(e) }
+  }
 }
