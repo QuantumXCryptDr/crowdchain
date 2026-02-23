@@ -14,6 +14,9 @@ import { useParams } from "next/navigation"
 import { getContract, formatEther, parseEther, getSigner } from "@/lib/web3"
 import { type Campaign, CampaignStatus, type Milestone } from "@/types/campaign"
 import { useToast } from "@/hooks/use-toast"
+import { marked } from "marked"
+import DOMPurify from "dompurify"
+import { format as timeagoFormat } from "timeago.js"
 
 export default function CampaignDetailPage() {
   const params = useParams()
@@ -25,14 +28,239 @@ export default function CampaignDetailPage() {
   const [contributionAmount, setContributionAmount] = useState("")
   const [loading, setLoading] = useState(true)
   const [contributing, setContributing] = useState(false)
+  const [comments, setComments] = useState<Array<{id: string; author: string; text: string; createdAt: number}>>([])
+  const [newComment, setNewComment] = useState("")
+  const [polls, setPolls] = useState<
+    Array<{
+      id: string
+      question: string
+      options: Array<{ id: string; text: string; votes: number }>
+      createdBy: string
+      createdAt: number
+      voters: string[]
+    }>
+  >([])
+  const [pollQuestion, setPollQuestion] = useState("")
+  const [pollOptionsText, setPollOptionsText] = useState("")
+  const [proofs, setProofs] = useState<Array<{id: string; url: string; caption: string; uploader: string; createdAt: number}>>([])
   const { toast } = useToast()
 
   useEffect(() => {
     if (campaignId) {
       loadCampaignData()
       getUserAddress()
+      loadCommunityData()
     }
   }, [campaignId])
+
+  const storageKey = (suffix: string) => `campaign:${campaignId}:community:${suffix}`
+
+  const loadCommunityData = async () => {
+    try {
+      // Try server first
+      const res = await fetch(`/api/campaign/${campaignId}/community`)
+      if (res.ok) {
+        const json = await res.json()
+        if (json.success) {
+          setComments(json.data.comments || [])
+          setPolls(json.data.polls || [])
+          setProofs(json.data.proofs || [])
+          return
+        }
+      }
+
+      // Fallback to localStorage if server unavailable
+      const c = localStorage.getItem(storageKey("comments"))
+      const p = localStorage.getItem(storageKey("polls"))
+      const pr = localStorage.getItem(storageKey("proofs"))
+      if (c) setComments(JSON.parse(c))
+      if (p) setPolls(JSON.parse(p))
+      if (pr) setProofs(JSON.parse(pr))
+    } catch (e) {
+      console.error("Failed to load community data:", e)
+    }
+  }
+
+  const saveComments = (next: typeof comments) => {
+    setComments(next)
+    try {
+      localStorage.setItem(storageKey("comments"), JSON.stringify(next))
+    } catch (e) {
+      console.error("Failed to save comments:", e)
+    }
+  }
+
+  const savePolls = (next: typeof polls) => {
+    setPolls(next)
+    try {
+      localStorage.setItem(storageKey("polls"), JSON.stringify(next))
+    } catch (e) {
+      console.error("Failed to save polls:", e)
+    }
+  }
+
+  const saveProofs = (next: typeof proofs) => {
+    setProofs(next)
+    try {
+      localStorage.setItem(storageKey("proofs"), JSON.stringify(next))
+    } catch (e) {
+      console.error("Failed to save proofs:", e)
+    }
+  }
+
+  const isCreator = () => {
+    if (!campaign || !userAddress) return false
+    return campaign.creator.toLowerCase() === userAddress.toLowerCase()
+  }
+
+  const addComment = async () => {
+    if (!newComment || newComment.trim().length === 0) return
+    const author = userAddress || "anonymous"
+    const body = { type: "comment", author, text: newComment.trim() }
+    try {
+      const res = await fetch(`/api/campaign/${campaignId}/community`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        if (json.success) {
+          const next = [json.comment, ...comments]
+          saveComments(next)
+          setNewComment("")
+          toast({ title: "Comment added" })
+          return
+        }
+      }
+    } catch (e) {
+      console.error("addComment error", e)
+    }
+
+    // Fallback locally
+    const entry = { id: `${Date.now()}-${Math.random()}`, author, text: newComment.trim(), createdAt: Date.now() }
+    const next = [entry, ...comments]
+    saveComments(next)
+    setNewComment("")
+    toast({ title: "Comment added (local)" })
+  }
+
+  const createPoll = async () => {
+    if (!pollQuestion || pollQuestion.trim().length === 0) return
+    const opts = pollOptionsText
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 6)
+    if (opts.length < 2) {
+      toast({ title: "Error", description: "Provide at least two options", variant: "destructive" })
+      return
+    }
+    const body = { type: "poll", question: pollQuestion.trim(), options: opts, createdBy: userAddress || "anonymous" }
+    try {
+      const res = await fetch(`/api/campaign/${campaignId}/community`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        if (json.success) {
+          const next = [json.poll, ...polls]
+          savePolls(next)
+          setPollQuestion("")
+          setPollOptionsText("")
+          toast({ title: "Poll created" })
+          return
+        }
+      }
+    } catch (e) {
+      console.error("createPoll error", e)
+    }
+
+    // fallback local
+    const poll = {
+      id: `${Date.now()}-${Math.random()}`,
+      question: pollQuestion.trim(),
+      options: opts.map((o, i) => ({ id: `opt-${i}`, text: o, votes: 0 })),
+      createdBy: userAddress || "anonymous",
+      createdAt: Date.now(),
+      voters: [],
+    }
+    const next = [poll, ...polls]
+    savePolls(next)
+    setPollQuestion("")
+    setPollOptionsText("")
+    toast({ title: "Poll created (local)" })
+  }
+
+  const votePoll = async (pollId: string, optionId: string) => {
+    const voter = userAddress || localStorage.getItem(`campaign:${campaignId}:anonVoterId`) || `anon-${Math.random()}`
+    if (!userAddress) localStorage.setItem(`campaign:${campaignId}:anonVoterId`, voter)
+    try {
+      const res = await fetch(`/api/campaign/${campaignId}/community`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "vote", pollId, optionId, voter }),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        if (json.success) {
+          savePolls(json.polls)
+          toast({ title: "Vote recorded" })
+          return
+        }
+      }
+    } catch (e) {
+      console.error("votePoll error", e)
+    }
+
+    // fallback local update
+    const next = polls.map((pl) => {
+      if (pl.id !== pollId) return pl
+      if (pl.voters.includes(voter)) return pl
+      return {
+        ...pl,
+        options: pl.options.map((o) => (o.id === optionId ? { ...o, votes: o.votes + 1 } : o)),
+        voters: [...pl.voters, voter],
+      }
+    })
+    savePolls(next)
+    toast({ title: "Vote recorded (local)" })
+  }
+
+  const uploadProof = async (file: File, caption: string) => {
+    try {
+      const form = new FormData()
+      form.append("file", file)
+      form.append("caption", caption)
+      form.append("uploader", userAddress || "anonymous")
+
+      const res = await fetch(`/api/campaign/${campaignId}/community`, { method: "POST", body: form })
+      if (res.ok) {
+        const json = await res.json()
+        if (json.success) {
+          const next = [json.proof, ...proofs]
+          saveProofs(next)
+          toast({ title: "Proof uploaded" })
+          return
+        }
+      }
+    } catch (e) {
+      console.error("uploadProof error", e)
+    }
+
+    // fallback to local encoder
+    const reader = new FileReader()
+    reader.onload = () => {
+      const url = String(reader.result)
+      const entry = { id: `${Date.now()}-${Math.random()}`, url, caption, uploader: userAddress || "anonymous", createdAt: Date.now() }
+      const next = [entry, ...proofs]
+      saveProofs(next)
+      toast({ title: "Proof uploaded (local)" })
+    }
+    reader.readAsDataURL(file)
+  }
 
   const getUserAddress = async () => {
     try {
@@ -302,10 +530,11 @@ export default function CampaignDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="about" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="updates">Updates</TabsTrigger>
                 <TabsTrigger value="milestones">Milestones</TabsTrigger>
+                <TabsTrigger value="community">Community</TabsTrigger>
               </TabsList>
 
               <TabsContent value="about" className="space-y-4">
@@ -364,6 +593,138 @@ export default function CampaignDetailPage() {
                         Milestones will be available after the campaign reaches its funding goal.
                       </p>
                     )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="community">
+                <Card className="mb-4">
+                  <CardHeader>
+                    <CardTitle>Community Discussion</CardTitle>
+                    <CardDescription>Comments, polls, and creator proof uploads</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>New Comment</Label>
+                        <div className="flex items-start gap-2 mt-2">
+                          <Input value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Write a supportive message or question..." />
+                          <Button onClick={addComment} className="whitespace-nowrap">Comment</Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-semibold mb-2">Recent Comments</h4>
+                        {comments.length === 0 ? (
+                          <p className="text-gray-600">No comments yet — be the first to engage.</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {comments.map((c) => (
+                              <div key={c.id} className="p-3 bg-gray-50 rounded">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex items-start gap-3">
+                                    <div className="w-9 h-9 rounded-full bg-slate-700 text-white flex items-center justify-center font-medium">
+                                      {String(c.author || "anon").slice(2, 6).toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium">{c.author}</p>
+                                      <div className="text-sm text-gray-700 mt-1" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(c.text || "")) }} />
+                                    </div>
+                                  </div>
+                                  <div className="text-xs text-gray-500">{timeagoFormat(c.createdAt)}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="mb-4">
+                  <CardHeader>
+                    <CardTitle>Polls</CardTitle>
+                    <CardDescription>Create or vote on polls</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {isCreator() && (
+                      <div className="mb-4">
+                        <Label>Poll Question</Label>
+                        <Input value={pollQuestion} onChange={(e) => setPollQuestion(e.target.value)} placeholder="Example: Which feature should we prioritize?" />
+                        <Label className="mt-2">Options (one per line, max 6)</Label>
+                        <textarea value={pollOptionsText} onChange={(e) => setPollOptionsText(e.target.value)} className="w-full rounded border p-2 mt-1" rows={4} />
+                        <div className="mt-2">
+                          <Button onClick={createPoll}>Create Poll</Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {polls.length === 0 && <p className="text-gray-600">No polls yet.</p>}
+                      {polls.map((pl) => (
+                        <div key={pl.id} className="p-3 bg-gray-50 rounded">
+                          <div className="flex justify-between">
+                            <div>
+                              <p className="font-semibold">{pl.question}</p>
+                              <p className="text-xs text-gray-500">by {pl.createdBy}</p>
+                            </div>
+                            <div className="text-xs text-gray-500">{timeagoFormat(pl.createdAt)}</div>
+                          </div>
+                          <div className="mt-2 space-y-2">
+                            {pl.options.map((o) => (
+                              <div key={o.id} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <Button size="sm" onClick={() => votePoll(pl.id, o.id)} disabled={pl.voters.includes(userAddress || localStorage.getItem(`campaign:${campaignId}:anonVoterId`) || "")}>
+                                    Vote
+                                  </Button>
+                                  <div>{o.text}</div>
+                                </div>
+                                <div className="text-sm text-gray-600">{o.votes} votes</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Creator Proofs</CardTitle>
+                    <CardDescription>Creators can upload image proof of fund use</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {isCreator() && (
+                      <div className="mb-4">
+                        <Label>Upload Proof Image</Label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0]
+                            if (!f) return
+                            const cap = prompt("Caption for this proof image (optional)") || ""
+                            uploadProof(f, cap)
+                            e.currentTarget.value = ""
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {proofs.length === 0 && <p className="text-gray-600">No proof images yet.</p>}
+                      {proofs.map((pr) => (
+                        <div key={pr.id} className="border rounded overflow-hidden">
+                          <img src={pr.url} alt={pr.caption} className="w-full h-48 object-cover" />
+                          <div className="p-2">
+                            <p className="text-sm font-medium">{pr.caption}</p>
+                            <p className="text-xs text-gray-500">Uploaded by {pr.uploader} · {timeagoFormat(pr.createdAt)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>

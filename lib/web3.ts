@@ -168,6 +168,42 @@ export const getPlatformFeePercent = async () => {
   }
 }
 
+export const getContractOwner = async () => {
+  try {
+    const provider = getProvider()
+    if (!provider || !isContractDeployed()) return null
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    const owner = await contract.owner()
+    return owner
+  } catch (e) {
+    console.error("getContractOwner error", e)
+    return null
+  }
+}
+
+export const getContractBalance = async () => {
+  try {
+    const provider = getProvider()
+    if (!provider || !isContractDeployed()) return "0"
+    const balance = await provider.getBalance(CONTRACT_ADDRESS)
+    return balance.toString()
+  } catch (e) {
+    console.error("getContractBalance error", e)
+    return "0"
+  }
+}
+
+export const getSignerAddress = async () => {
+  try {
+    const signer = await getSigner()
+    if (!signer) return null
+    return await signer.getAddress()
+  } catch (e) {
+    console.error("getSignerAddress error", e)
+    return null
+  }
+}
+
 export const getCampaignCount = async () => {
   try {
     const provider = getProvider()
@@ -186,8 +222,9 @@ export const setPlatformFeePercent = async (newFee: number) => {
     const contract = await getContract()
     if (!contract) return { success: false, message: "Wallet not connected or contract unavailable" }
     const tx = await contract.setPlatformFee(newFee)
+    const txHash = tx.hash
     await tx.wait()
-    return { success: true }
+    return { success: true, txHash }
   } catch (e: any) {
     console.error("setPlatformFeePercent error", e)
     return { success: false, message: e?.message || String(e) }
@@ -199,10 +236,19 @@ export const withdrawPlatformFunds = async () => {
     const contract = await getContract()
     if (!contract) return { success: false, message: "Wallet not connected or contract unavailable" }
     const tx = await contract.withdrawPlatformFunds()
+    const txHash = tx.hash
     await tx.wait()
-    return { success: true }
+    return { success: true, txHash }
   } catch (e: any) {
     console.error("withdrawPlatformFunds error", e)
     return { success: false, message: e?.message || String(e) }
   }
+}
+
+export const getEtherscanTxUrl = (txHash: string) => {
+  return `https://sepolia.etherscan.io/tx/${txHash}`
+}
+
+export const getEtherscanContractUrl = () => {
+  return `https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`
 }

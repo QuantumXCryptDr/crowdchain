@@ -1,0 +1,36 @@
+{
+  "1": {
+    "comments": [
+      {
+        "id": "1771770655563-0.04139004691990644",
+        "author": "tester",
+        "text": "Hello from automated test",
+        "createdAt": 1771770655563
+      }
+    ],
+    "polls": [
+      {
+        "id": "1771770687970-0.6611168037029789",
+        "question": "Which reward?",
+        "options": [
+          {
+            "id": "opt-0",
+            "text": "Sticker",
+            "votes": 1
+          },
+          {
+            "id": "opt-1",
+            "text": "Early Access",
+            "votes": 0
+          }
+        ],
+        "createdBy": "tester",
+        "createdAt": 1771770687970,
+        "voters": [
+          "tester"
+        ]
+      }
+    ],
+    "proofs": []
+  }
+}

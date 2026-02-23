@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Wallet, Plus, TrendingUp, Users, Shield } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Wallet, Plus, TrendingUp, Users, Shield, Search, Filter } from "lucide-react"
 import Link from "next/link"
 import { getContract, connectWallet, formatEther } from "@/lib/web3"
 import { type Campaign, CampaignStatus } from "@/types/campaign"
@@ -16,10 +17,17 @@ declare global {
   }
 }
 
+type SortOption = "newest" | "trending" | "ending-soon" | "most-funded"
+
 export default function HomePage() {
   const [isConnected, setIsConnected] = useState(false)
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "successful" | "failed">("active")
+  const [sortBy, setSortBy] = useState<SortOption>("newest")
+  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     // Only run on client side
@@ -30,6 +38,50 @@ export default function HomePage() {
       setLoading(false)
     }
   }, [])
+
+  // Filter and sort campaigns
+  useEffect(() => {
+    let result = [...campaigns]
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(
+        (c) =>
+          c.title.toLowerCase().includes(query) ||
+          c.description.toLowerCase().includes(query)
+      )
+    }
+
+    // Apply status filter
+    if (selectedStatus !== "all") {
+      result = result.filter(
+        (c) =>
+          (selectedStatus === "active" && c.status === CampaignStatus.Active) ||
+          (selectedStatus === "successful" && c.status === CampaignStatus.Successful) ||
+          (selectedStatus === "failed" && c.status === CampaignStatus.Failed)
+      )
+    }
+
+    // Apply sorting
+    result = result.sort((a, b) => {
+      switch (sortBy) {
+        case "trending":
+          return Number(b.raisedAmount) - Number(a.raisedAmount)
+        case "ending-soon":
+          return a.deadline - b.deadline
+        case "most-funded":
+          const percentA = (Number(a.raisedAmount) / Number(a.goalAmount)) * 100
+          const percentB = (Number(b.raisedAmount) / Number(b.goalAmount)) * 100
+          return percentB - percentA
+        case "newest":
+        default:
+          return b.id - a.id
+      }
+    })
+
+    setFilteredCampaigns(result)
+  }, [campaigns, searchQuery, selectedStatus, sortBy])
 
   const checkWalletConnection = async () => {
     if (typeof window !== "undefined" && window.ethereum) {
@@ -187,7 +239,76 @@ export default function HomePage() {
       {/* Active Campaigns */}
       <section className="py-16 bg-slate-800/50">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold text-center mb-12 text-white">Active Campaigns</h3>
+          <h3 className="text-3xl font-bold mb-8 text-white">Active Campaigns</h3>
+
+          {/* Search & Filter Bar */}
+          <div className="mb-8 space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-purple-400" />
+              <Input
+                placeholder="Search campaigns by title or description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-slate-700 border-purple-600/30 text-white placeholder:text-purple-300"
+              />
+            </div>
+
+            {/* Filters Row */}
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              {/* Sort Dropdown */}
+              <div className="flex items-center space-x-2">
+                <Filter className="h-5 w-5 text-purple-400" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="px-3 py-2 bg-slate-700 border border-purple-600/30 text-white rounded text-sm"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="trending">Most Funded</option>
+                  <option value="ending-soon">Ending Soon</option>
+                  <option value="most-funded">Highest Progress</option>
+                </select>
+              </div>
+
+              {/* Status Filter */}
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-purple-300">Status:</span>
+                <div className="flex space-x-2">
+                  {(["all", "active", "successful", "failed"] as const).map((status) => (
+                    <Button
+                      key={status}
+                      onClick={() => setSelectedStatus(status)}
+                      variant={selectedStatus === status ? "default" : "outline"}
+                      className={`text-xs capitalize ${
+                        selectedStatus === status
+                          ? "bg-purple-600 border-purple-600"
+                          : "border-purple-400/30 text-purple-300 hover:border-purple-400"
+                      }`}
+                    >
+                      {status === "all" ? "All" : status}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Results Count */}
+              <div className="ml-auto text-sm text-purple-300">
+                {filteredCampaigns.length} {filteredCampaigns.length === 1 ? "campaign" : "campaigns"}
+              </div>
+            </div>
+          </div>
+
+          {/* No Results */}
+          {!loading && filteredCampaigns.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-purple-300 text-lg mb-4">No campaigns found</p>
+              <p className="text-purple-400 text-sm mb-6">Try adjusting your search or filters</p>
+              <Button onClick={() => { setSearchQuery(""); setSelectedStatus("active"); setSortBy("newest") }} variant="outline" className="border-purple-400 text-purple-400">
+                Clear Filters
+              </Button>
+            </div>
+          )}
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -206,44 +327,37 @@ export default function HomePage() {
                 </Card>
               ))}
             </div>
-          ) : campaigns.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600 mb-4">No active campaigns found.</p>
-              <Link href="/create">
-                <Button>Create the First Campaign</Button>
-              </Link>
-            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {campaigns.map((campaign) => (
-                <Card key={campaign.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="h-48 bg-gradient-to-r from-blue-400 to-purple-500 relative">
+              {filteredCampaigns.map((campaign) => (
+                <Card key={campaign.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-slate-700 border-slate-600">
+                  <div className="h-48 bg-gradient-to-r from-purple-500 to-pink-500 relative">
                     {campaign.isPremium && <Badge className="absolute top-2 right-2 bg-yellow-500">Premium</Badge>}
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                       <h4 className="text-white text-lg font-semibold text-center px-4">{campaign.title}</h4>
                     </div>
                   </div>
                   <CardContent className="p-6">
-                    <p className="text-gray-600 mb-4 line-clamp-2">{campaign.description}</p>
+                    <p className="text-purple-200 mb-4 line-clamp-2">{campaign.description}</p>
                     <div className="space-y-3">
                       <div>
-                        <div className="flex justify-between text-sm mb-1">
+                        <div className="flex justify-between text-sm mb-1 text-purple-300">
                           <span>Progress</span>
                           <span>{getProgressPercentage(campaign.raisedAmount, campaign.goalAmount).toFixed(1)}%</span>
                         </div>
-                        <Progress value={getProgressPercentage(campaign.raisedAmount, campaign.goalAmount)} />
+                        <Progress value={getProgressPercentage(campaign.raisedAmount, campaign.goalAmount)} className="bg-slate-600" />
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-sm text-white">
                         <span className="font-semibold">{campaign.raisedAmount} ETH raised</span>
-                        <span className="text-gray-600">of {campaign.goalAmount} ETH</span>
+                        <span className="text-purple-400">of {campaign.goalAmount} ETH</span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-sm text-purple-300">
                         <span>{campaign.contributorCount} contributors</span>
-                        <span className="text-gray-600">{formatTimeLeft(campaign.deadline)}</span>
+                        <span className="text-purple-400">{formatTimeLeft(campaign.deadline)}</span>
                       </div>
                     </div>
                     <Link href={`/campaign/${campaign.id}`}>
-                      <Button className="w-full mt-4">View Campaign</Button>
+                      <Button className="w-full mt-4 bg-purple-600 hover:bg-purple-700">View Campaign</Button>
                     </Link>
                   </CardContent>
                 </Card>

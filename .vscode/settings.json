@@ -9,8 +9,16 @@
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
     "cSpell.words": [
+        "apikey",
+        "Funder",
+        "Funders",
+        "linecap",
+        "linejoin",
+        "quicknode",
         "Reentrancy",
+        "sepoliafaucet",
         "shadcn",
-        "Sidechain"
+        "Sidechain",
+        "Solana"
     ]
 }
