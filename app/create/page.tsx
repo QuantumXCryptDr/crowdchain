@@ -95,6 +95,48 @@ export default function CreateCampaignPage() {
       return
     }
 
+    // Additional validations
+    if (formData.title.length > 200) {
+      toast({
+        title: "Error",
+        description: "Title must be less than 200 characters",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (formData.description.length > 5000) {
+      toast({
+        title: "Error",
+        description: "Description must be less than 5000 characters",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const goalAmount = parseFloat(formData.goalAmount)
+    if (isNaN(goalAmount) || goalAmount <= 0) {
+      toast({
+        title: "Error",
+        description: "Goal amount must be a positive number",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const deadlineTime = formData.deadline.getTime()
+    const now = new Date().getTime()
+    const minDeadlineMs = 24 * 60 * 60 * 1000 // 24 hours
+
+    if (deadlineTime - now < minDeadlineMs) {
+      toast({
+        title: "Error",
+        description: "Deadline must be at least 24 hours in the future",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
 
     try {

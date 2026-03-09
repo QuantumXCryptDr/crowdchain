@@ -21,7 +21,7 @@ solidity: {
       chainId: 1337,
     },
     sepolia: {
-      url: process.env.SEPOLIA_URL || "https://eth-sepolia.g.alchemy.com/v2/8kdlAFfVLbcbvH24uZIYp", // fallback to public RPC
+      url: process.env.SEPOLIA_URL || "",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
     arbitrum: {

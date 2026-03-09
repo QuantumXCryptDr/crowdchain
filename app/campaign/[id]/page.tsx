@@ -43,6 +43,7 @@ export default function CampaignDetailPage() {
   const [pollQuestion, setPollQuestion] = useState("")
   const [pollOptionsText, setPollOptionsText] = useState("")
   const [proofs, setProofs] = useState<Array<{id: string; url: string; caption: string; uploader: string; createdAt: number}>>([])
+  const [parsedComments, setParsedComments] = useState<Record<string, string>>({})
   const { toast } = useToast()
 
   useEffect(() => {
@@ -52,6 +53,16 @@ export default function CampaignDetailPage() {
       loadCommunityData()
     }
   }, [campaignId])
+
+  const parseCommentText = async (id: string, text: string) => {
+    try {
+      const parsed = await marked.parse(text || "")
+      setParsedComments(prev => ({ ...prev, [id]: parsed }))
+    } catch (e) {
+      console.error("Failed to parse comment:", e)
+      setParsedComments(prev => ({ ...prev, [id]: text }))
+    }
+  }
 
   const storageKey = (suffix: string) => `campaign:${campaignId}:community:${suffix}`
 
@@ -619,22 +630,27 @@ export default function CampaignDetailPage() {
                           <p className="text-gray-600">No comments yet — be the first to engage.</p>
                         ) : (
                           <div className="space-y-3">
-                            {comments.map((c) => (
-                              <div key={c.id} className="p-3 bg-gray-50 rounded">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex items-start gap-3">
-                                    <div className="w-9 h-9 rounded-full bg-slate-700 text-white flex items-center justify-center font-medium">
-                                      {String(c.author || "anon").slice(2, 6).toUpperCase()}
+                            {comments.map((c) => {
+                              if (!parsedComments[c.id]) {
+                                parseCommentText(c.id, c.text)
+                              }
+                              return (
+                                <div key={c.id} className="p-3 bg-gray-50 rounded">
+                                  <div className="flex justify-between items-start">
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-9 h-9 rounded-full bg-slate-700 text-white flex items-center justify-center font-medium">
+                                        {String(c.author || "anon").slice(2, 6).toUpperCase()}
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium">{c.author}</p>
+                                        <div className="text-sm text-gray-700 mt-1" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(parsedComments[c.id] || c.text) }} />
+                                      </div>
                                     </div>
-                                    <div>
-                                      <p className="text-sm font-medium">{c.author}</p>
-                                      <div className="text-sm text-gray-700 mt-1" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(c.text || "")) }} />
-                                    </div>
+                                    <div className="text-xs text-gray-500">{timeagoFormat(c.createdAt)}</div>
                                   </div>
-                                  <div className="text-xs text-gray-500">{timeagoFormat(c.createdAt)}</div>
                                 </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         )}
                       </div>

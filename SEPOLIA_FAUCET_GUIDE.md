@@ -6,7 +6,7 @@
 
 ---
 
-## ⚡ **FASTEST Method (Alchemy Faucet - 1-2 minutes)**
+## **FASTEST Method (Alchemy Faucet - 1-2 minutes)**
 
 1. Open: https://sepoliafaucet.com
 2. **Paste your address:** `0x8b3dfD81484530B484964fdFBD490530edE324e3`
@@ -14,7 +14,7 @@
 4. Wait 1-2 minutes
 5. Check balance: https://sepolia.etherscan.io/address/0x8b3dfD81484530B484964fdFBD490530edE324e3
 
-**Success Rate:** 95% ✅
+**Success Rate:** 95%
 
 ---
 
@@ -36,7 +36,7 @@
 
 ---
 
-## ✅ How to Verify You Got ETH
+## How to Verify You Got ETH
 
 1. Open Etherscan: https://sepolia.etherscan.io/address/0x8b3dfD81484530B484964fdFBD490530edE324e3
 2. Look for "Balance" - should show 0.5+ ETH
@@ -85,7 +85,7 @@ This will:
 
 ---
 
-## 📱 Quick Copy-Paste Commands
+## Quick Copy-Paste Commands
 
 ### Add to your .env (if you have one):
 ```
@@ -101,7 +101,7 @@ SEPOLIA_PRIVATE_KEY=0x26f7d4e301245338855266999abfa9f4cb2b4f2f64490f01a40f3579d3
 
 ---
 
-## 🔗 Useful Links
+## Useful Links
 
 | Service | Link |
 |---------|------|

@@ -24,24 +24,24 @@ function log(color, ...msg) {
 }
 
 async function main() {
-  log(colors.bright + colors.blue, "\n🔐 Create Sepolia Testnet Wallet\n");
+  log(colors.bright + colors.blue, "\nCreate Sepolia Testnet Wallet\n");
 
   // Generate a new random wallet
   const wallet = ethers.Wallet.createRandom();
 
-  log(colors.green, "✅ New wallet created!\n");
+  log(colors.green, "New wallet created!\n");
 
-  log(colors.cyan, "📋 Wallet Details:\n");
+  log(colors.cyan, "Wallet Details:\n");
   log(colors.yellow, "Address:    ", wallet.address);
   log(colors.yellow, "Private Key:", wallet.privateKey);
   log(colors.yellow, "Mnemonic:   ", wallet.mnemonic.phrase);
 
-  log(colors.bright + colors.yellow, "\n⚠️  SECURITY WARNING:\n");
-  log(colors.red, "🔒 NEVER share your private key!");
-  log(colors.red, "🔒 NEVER commit it to git!");
-  log(colors.red, "🔒 Keep it SECRET and SAFE!");
+  log(colors.bright + colors.yellow, "\nSECURITY WARNING:\n");
+  log(colors.red, "NEVER share your private key!");
+  log(colors.red, "NEVER commit it to git!");
+  log(colors.red, "Keep it SECRET and SAFE!");
 
-  log(colors.bright + colors.green, "\n✨ Next Steps:\n");
+  log(colors.bright + colors.green, "\nNext Steps:\n");
   log(colors.cyan, "1. Copy the address above");
   log(colors.cyan, "2. Get test ETH from faucet (0.5-1.0 ETH is enough):");
   log(colors.green, "   • Alchemy: https://sepoliafaucet.com");
@@ -58,7 +58,7 @@ async function main() {
   log(colors.yellow, "   npx hardhat run scripts/deploy.js --network sepolia\n");
 
   // Option to save to file
-  log(colors.blue, "💾 Saving wallet to testnet-wallet.json (for reference only)...");
+  log(colors.blue, "Saving wallet to testnet-wallet.json (for reference only)...");
   const walletData = {
     address: wallet.address,
     privateKey: wallet.privateKey,
@@ -72,7 +72,7 @@ async function main() {
     path.join(__dirname, "../testnet-wallet.json"),
     JSON.stringify(walletData, null, 2)
   );
-  log(colors.green, "✅ Saved to testnet-wallet.json (already in .gitignore)\n");
+  log(colors.green, "Saved to testnet-wallet.json (already in .gitignore)\n");
 }
 
 main().catch(console.error);

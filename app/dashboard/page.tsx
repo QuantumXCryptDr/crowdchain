@@ -31,15 +31,57 @@ export default function AnalyticsDashboard() {
   const [platformFeePercent, setPlatformFeePercent] = useState(2)
 
   useEffect(() => {
-    checkWalletConnection()
-    loadCampaignFunds()
+    let isMounted = true
+
+    const initialize = async () => {
+      try {
+        const connected = await checkWalletConnection()
+        if (isMounted && connected) {
+          await loadCampaignFunds()
+        }
+      } catch (error) {
+        console.error("Error initializing dashboard:", error)
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    initialize()
+
+    // Listen for wallet connection changes
+    const handleAccountsChanged = () => {
+      if (isMounted) {
+        initialize()
+      }
+    }
+
+    if (typeof window !== "undefined" && window.ethereum) {
+      window.ethereum.on("accountsChanged", handleAccountsChanged)
+    }
+
+    return () => {
+      isMounted = false
+      if (typeof window !== "undefined" && window.ethereum) {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
+      }
+    }
   }, [])
 
   const checkWalletConnection = async () => {
     if (typeof window !== "undefined" && window.ethereum) {
-      const accounts = await window.ethereum.request({ method: "eth_accounts" })
-      setIsConnected(accounts.length > 0)
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_accounts" })
+        const connected = accounts.length > 0
+        setIsConnected(connected)
+        return connected
+      } catch (error) {
+        console.error("Error checking wallet connection:", error)
+        setIsConnected(false)
+        return false
+      }
     }
+    return false
   }
 
   const handleConnectWallet = async () => {

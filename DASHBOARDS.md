@@ -157,17 +157,17 @@ The dashboards interact with these contract functions:
 ## Error Handling
 
 ### Fund Flow Dashboard
-- ✅ Handles wallet disconnection
-- ✅ Gracefully loads campaigns
-- ✅ Shows loading states
-- ✅ Displays error messages if contract unavailable
+- Handles wallet disconnection
+- Gracefully loads campaigns
+- Shows loading states
+- Displays error messages if contract unavailable
 
 ### Withdrawal Dashboard
-- ✅ Validates Ethereum addresses
-- ✅ Checks wallet connection
-- ✅ Filters campaigns by creator
-- ✅ Handles transaction failures
-- ✅ Shows real-time transaction status
+- Validates Ethereum addresses
+- Checks wallet connection
+- Filters campaigns by creator
+- Handles transaction failures
+- Shows real-time transaction status
 
 ---
 

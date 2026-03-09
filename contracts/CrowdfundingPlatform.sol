@@ -61,6 +61,10 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
     ) external returns (uint256) {
         require(_goalAmount > 0, "Goal amount must be greater than 0");
         require(_deadline > block.timestamp, "Deadline must be in the future");
+        require(bytes(_title).length > 0, "Title cannot be empty");
+        require(bytes(_title).length <= 200, "Title too long");
+        require(bytes(_description).length > 0, "Description cannot be empty");
+        require(bytes(_description).length <= 5000, "Description too long");
         
         campaignCounter++;
         uint256 campaignId = campaignCounter;
@@ -111,6 +115,11 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         Campaign storage campaign = campaigns[_campaignId];
         require(msg.sender == campaign.creator, "Only campaign creator can create milestones");
         require(campaign.status == CampaignStatus.Successful, "Campaign must be successful");
+        require(_amount > 0, "Milestone amount must be greater than 0");
+        require(_deadline > block.timestamp, "Milestone deadline must be in the future");
+        require(_amount <= campaign.raisedAmount, "Milestone amount cannot exceed raised amount");
+        require(bytes(_description).length > 0, "Description cannot be empty");
+        require(bytes(_description).length <= 1000, "Description too long");
         
         uint256 milestoneId = campaign.milestoneCount;
         Milestone storage milestone = campaign.milestones[milestoneId];
@@ -156,8 +165,11 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         uint256 platformFee = (milestone.amount * platformFeePercent) / 100;
         uint256 creatorAmount = milestone.amount - platformFee;
         
-        payable(owner()).transfer(platformFee);
-        campaign.creator.transfer(creatorAmount);
+        (bool platformSuccess, ) = payable(owner()).call{value: platformFee}("");
+        require(platformSuccess, "Platform fee transfer failed");
+        
+        (bool creatorSuccess, ) = campaign.creator.call{value: creatorAmount}("");
+        require(creatorSuccess, "Creator payment failed");
         
         emit FundsReleased(_campaignId, _milestoneId, creatorAmount);
     }
@@ -175,7 +187,8 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         campaign.contributions[msg.sender] = 0;
         campaign.raisedAmount -= contributionAmount;
         
-        payable(msg.sender).transfer(contributionAmount);
+        (bool success, ) = payable(msg.sender).call{value: contributionAmount}("");
+        require(success, "Refund transfer failed");
         
         emit RefundIssued(_campaignId, msg.sender, contributionAmount);
     }
@@ -186,7 +199,9 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         require(msg.value >= 0.01 ether, "Insufficient payment for premium features");
         
         campaign.isPremium = true;
-        payable(owner()).transfer(msg.value);
+        
+        (bool success, ) = payable(owner()).call{value: msg.value}("");
+        require(success, "Premium payment transfer failed");
         
         emit PremiumActivated(_campaignId);
     }
@@ -249,6 +264,10 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
     }
     
     function withdrawPlatformFunds() external onlyOwner {
-        payable(owner()).transfer(address(this).balance);
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds to withdraw");
+        
+        (bool success, ) = payable(owner()).call{value: balance}("");
+        require(success, "Withdrawal failed");
     }
 }

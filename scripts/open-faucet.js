@@ -24,7 +24,7 @@ function log(color, ...msg) {
 }
 
 async function main() {
-  log(colors.bright + colors.blue, "\n💰 Sepolia Test ETH Faucet\n");
+  log(colors.bright + colors.blue, "\nSepolia Test ETH Faucet\n");
 
   // Get address from command line or .env
   let address = process.argv[2];
@@ -34,23 +34,23 @@ async function main() {
     if (privateKey) {
       const wallet = new ethers.Wallet(privateKey);
       address = wallet.address;
-      log(colors.green, "✅ Using wallet from PRIVATE_KEY");
+      log(colors.green, "Using wallet from PRIVATE_KEY");
       log(colors.cyan, "Address:", address);
     }
   }
 
   if (!address) {
-    log(colors.red, "❌ Error: No address provided");
+    log(colors.red, "Error: No address provided");
     log(colors.yellow, "Usage: node scripts/open-faucet.js <address>");
     process.exit(1);
   }
 
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-    log(colors.red, "❌ Invalid Ethereum address:", address);
+    log(colors.red, "Invalid Ethereum address:", address);
     process.exit(1);
   }
 
-  log(colors.cyan, "\n📋 Available Faucets:\n");
+  log(colors.cyan, "\nAvailable Faucets:\n");
 
   const faucets = [
     {
@@ -97,7 +97,7 @@ async function main() {
     log(colors.yellow, "\nNote: Copy and paste your wallet address:");
     log(colors.cyan, address);
   } catch (error) {
-    log(colors.yellow, "⚠️  Could not open browser automatically");
+    log(colors.yellow, "Could not open browser automatically");
     log(colors.yellow, "\nManually visit one of these faucets:");
     faucets.forEach((f) => {
       log(colors.cyan, f.url);

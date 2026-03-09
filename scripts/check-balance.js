@@ -25,7 +25,7 @@ function log(color, ...msg) {
 }
 
 async function checkBalance() {
-  log(colors.bright + colors.blue, "\n🔍 Checking Sepolia Balance...\n");
+  log(colors.bright + colors.blue, "\nChecking Sepolia Balance...\n");
 
   try {
     const url = `${ETHERSCAN_API}?module=account&action=balance&address=${WALLET_ADDRESS}&tag=latest&apikey=YourApiKeyToken`;
@@ -38,19 +38,19 @@ async function checkBalance() {
       const balanceEth = Number(balanceWei) / 1e18;
 
       if (balanceEth > 0) {
-        log(colors.green, "✅ SUCCESS! You have test ETH!\n");
+        log(colors.green, "SUCCESS! You have test ETH!\n");
         log(colors.yellow, `Address:  ${WALLET_ADDRESS}`);
         log(colors.green, `Balance:  ${balanceEth.toFixed(6)} ETH`);
         log(colors.blue, `Wei:      ${balanceWei.toString()}`);
-        log(colors.green, "\n🎉 You're ready to deploy!\n");
+        log(colors.green, "\nYou're ready to deploy!\n");
         log(colors.cyan, "Run: npx hardhat run scripts/deploy.js --network sepolia\n");
       } else {
-        log(colors.red, "❌ No ETH found yet. Balance: 0 ETH\n");
+        log(colors.red, "No ETH found yet. Balance: 0 ETH\n");
         log(colors.yellow, "💧 Visit a faucet to request test ETH:");
         log(colors.cyan, "   https://sepoliafaucet.com\n");
       }
     } else {
-      log(colors.red, "❌ API Error:", data.message);
+      log(colors.red, "API Error:", data.message);
       log(colors.yellow, "\n📍 Check manually at:");
       log(
         colors.cyan,
@@ -58,7 +58,7 @@ async function checkBalance() {
       );
     }
   } catch (error) {
-    log(colors.red, "❌ Error:", error.message);
+    log(colors.red, "Error:", error.message);
     log(colors.yellow, "\n📍 Check manually at:");
     log(
       colors.cyan,

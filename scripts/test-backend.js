@@ -2,10 +2,9 @@
 
 /**
  * CrowdChain Backend Integration Test
- * Tests all smart contract interactions
+ * Supports Sepolia & Hardhat local network automatically
  */
 
-const hre = require("hardhat");
 const { ethers } = require("ethers");
 require("dotenv").config();
 
@@ -23,136 +22,132 @@ function log(color, ...msg) {
 }
 
 async function main() {
-  log(colors.bright + colors.blue, "\n🧪 CrowdChain Backend Integration Tests\n");
+  log(colors.bright + colors.blue, "\nCrowdChain Integration Test\n");
 
   try {
-    // 1. Test: Contract Deployment Status
-    log(colors.blue, "📋 Test 1: Contract Deployment Status");
-    const CONTRACT_ADDRESS = "0x1D6FB3A2F9928E84d8D0f7E695869b03Ed158816";
-    const provider = new ethers.JsonRpcProvider(
-      process.env.SEPOLIA_URL || "https://eth-sepolia.g.alchemy.com/v2/8kdlAFfVLbcbvH24uZIYp"
-    );
-    
+    const CONTRACT_ADDRESS = process.env.LOCAL_CONTRACT_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+
+    // ==============================
+    // 1. Detect Network
+    // ==============================
+    let provider;
+    let privateKey = process.env.PRIVATE_KEY;
+
+    if (!privateKey) throw new Error("PRIVATE_KEY missing in .env");
+
+    // Prefer Sepolia if URL exists, else default to localhost
+    const rpcUrl = process.env.SEPOLIA_URL || "http://127.0.0.1:8545";
+    provider = new ethers.JsonRpcProvider(rpcUrl);
+
+    const network = await provider.getNetwork();
+    log(colors.green, "Connected Chain ID:", network.chainId.toString());
+
+    if (network.chainId === 1337) {
+      log(colors.yellow, "Hardhat local network detected");
+    } else if (network.chainId === 11155111) {
+      log(colors.green, "Sepolia Testnet detected");
+    } else {
+      throw new Error("Unsupported network. Connect to Sepolia or Hardhat local.");
+    }
+
+    // ==============================
+    // 2. Contract Deployment Check
+    // ==============================
+    log(colors.blue, "\n Test 1: Contract Deployment Status");
     const code = await provider.getCode(CONTRACT_ADDRESS);
-    if (code === "0x") {
-      log(colors.red, "❌ Contract not deployed at", CONTRACT_ADDRESS);
-      return;
-    }
-    log(colors.green, "✅ Contract deployed at", CONTRACT_ADDRESS);
+    if (code === "0x") throw new Error(`Contract not deployed at ${CONTRACT_ADDRESS}`);
+    log(colors.green, "Contract deployed at:", CONTRACT_ADDRESS);
 
-    // 2. Test: Get Signer
-    log(colors.blue, "\n📋 Test 2: Wallet Connection");
-    if (!process.env.PRIVATE_KEY) {
-      log(colors.red, "❌ PRIVATE_KEY not set in .env");
-      return;
-    }
-    
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+    // ==============================
+    // 3. Wallet Setup
+    // ==============================
+    log(colors.blue, "\n Test 2: Wallet Connection");
+    const wallet = new ethers.Wallet(privateKey, provider);
     const address = await wallet.getAddress();
-    log(colors.green, "✅ Wallet connected:", address);
+    log(colors.green, "Wallet connected:", address);
 
-    // 3. Test: Check Balance
-    log(colors.blue, "\n📋 Test 3: Account Balance");
     const balance = await provider.getBalance(address);
     const balanceEth = ethers.formatEther(balance);
-    log(
-      colors.green,
-      `✅ Account balance: ${balanceEth} ETH`
-    );
+    log(colors.green, `Account Balance: ${balanceEth} ETH`);
 
     if (parseFloat(balanceEth) < 0.01) {
-      log(colors.yellow, "⚠️  Low balance. Get test ETH from faucet: https://sepoliafaucet.com");
+      log(colors.yellow, "Low balance. Fund wallet before write operations.");
     }
 
-    // 4. Test: Load Contract ABI
-    log(colors.blue, "\n📋 Test 4: Smart Contract ABI");
+    // ==============================
+    // 4. Contract Interface
+    // ==============================
+    log(colors.blue, "\n Test 3: ABI & Contract Binding");
     const CONTRACT_ABI = [
       "function campaignCounter() external view returns (uint256)",
-      "function createCampaign(string memory _title, string memory _description, string memory _imageUrl, uint256 _goalAmount, uint256 _deadline) external returns (uint256)",
-      "function contribute(uint256 _campaignId) external payable",
-      "function getCampaignDetails(uint256 _campaignId) external view returns (uint256, address, string, string, string, uint256, uint256, uint256, uint8, bool, uint256)",
-      "function getUserContribution(uint256 _campaignId, address _user) external view returns (uint256)",
+      "function createCampaign(string memory,string memory,string memory,uint256,uint256) external returns (uint256)",
+      "function contribute(uint256) external payable",
+      "function getCampaignDetails(uint256) external view returns (uint256,address,string,string,string,uint256,uint256,uint256,uint8,bool,uint256)",
+      "function getUserContribution(uint256,address) external view returns (uint256)",
       "function platformFeePercent() external view returns (uint256)",
+      "event CampaignCreated(uint256 indexed campaignId, address indexed creator)"
     ];
-    log(colors.green, "✅ ABI loaded with", CONTRACT_ABI.length, "functions");
 
-    // 5. Test: Contract Interaction
-    log(colors.blue, "\n📋 Test 5: Contract Function Calls");
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
+    const readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+    const writeContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
+    log(colors.green, "Read + Write contracts initialized");
 
-    try {
-      const campaignCount = await contract.campaignCounter();
-      log(colors.green, "✅ campaignCounter():", campaignCount.toString(), "campaigns found");
+    // ==============================
+    // 5. Read Functions Test
+    // ==============================
+    log(colors.blue, "\n Test 4: Read Functions");
+    const campaignCount = await readContract.campaignCounter();
+    log(colors.green, "campaignCounter():", campaignCount.toString());
+    const platformFee = await readContract.platformFeePercent();
+    log(colors.green, "platformFeePercent():", platformFee.toString() + "%");
 
-      const platformFee = await contract.platformFeePercent();
-      log(colors.green, "✅ platformFeePercent():", platformFee.toString() + "%");
-    } catch (error) {
-      log(colors.red, "❌ Contract call failed:", error.message);
-    }
-
-    // 6. Test: Create Campaign (simulation)
-    log(colors.blue, "\n📋 Test 6: Campaign Creation Simulation");
-    const title = "Test Campaign " + Date.now();
-    const description = "This is a test campaign for backend verification";
+    // ==============================
+    // 6. Gas Simulation
+    // ==============================
+    log(colors.blue, "\n Test 5: Campaign Creation Gas Simulation");
+    const title = "Integration Test " + Date.now();
+    const description = "Backend verification campaign";
     const imageUrl = "https://via.placeholder.com/400x300";
     const goalAmount = ethers.parseEther("1.0");
-    const deadline = Math.floor(Date.now() / 1000) + 86400 * 30; // 30 days from now
+    const deadline = Math.floor(Date.now() / 1000) + 86400 * 7;
 
-    log(colors.yellow, "Campaign Details:");
-    log(colors.yellow, "  Title:", title);
-    log(colors.yellow, "  Goal: 1.0 ETH");
-    log(colors.yellow, "  Deadline:", new Date(deadline * 1000).toISOString());
+    const gasEstimate = await writeContract.createCampaign.estimateGas(
+      title,
+      description,
+      imageUrl,
+      goalAmount,
+      deadline
+    );
+    log(colors.green, "Estimated Gas:", gasEstimate.toString());
 
-    try {
-      log(colors.yellow, "\n⏳ Estimating gas for campaign creation...");
-      const gasEstimate = await contract.createCampaign.estimateGas(
-        title,
-        description,
-        imageUrl,
-        goalAmount,
-        deadline
-      );
-      log(colors.green, "✅ Gas estimate:", gasEstimate.toString());
-    } catch (error) {
-      log(colors.red, "❌ Gas estimation failed:", error.message);
-    }
+    // ==============================
+    // 7. Event Listener
+    // ==============================
+    log(colors.blue, "\n Test 6: Event Listener Setup");
+    readContract.on("CampaignCreated", (campaignId, creator) => {
+      log(colors.yellow, `Event Detected → CampaignCreated | ID: ${campaignId.toString()} | Creator: ${creator}`);
+    });
+    log(colors.green, "CampaignCreated event listener attached");
 
-    // 7. Test: Web3 Integration Points
-    log(colors.blue, "\n📋 Test 7: Web3 Integration Points");
+    // ==============================
+    // 8. Integration Mapping
+    // ==============================
+    log(colors.blue, "\n Test 7: Frontend Integration Points");
     const integrationPoints = [
       { page: "Home Page", functions: ["loadCampaigns()", "checkWalletConnection()"] },
-      {
-        page: "Create Campaign",
-        functions: ["createCampaign()", "isWalletConnected()", "connectWallet()"],
-      },
-      { page: "Campaign Detail", functions: ["contribute()", "requestRefund()", "getCampaignDetails()"] },
+      { page: "Create Campaign", functions: ["createCampaign()", "connectWallet()"] },
+      { page: "Campaign Detail", functions: ["contribute()", "getCampaignDetails()"] },
       { page: "Analytics Dashboard", functions: ["campaignCounter()", "platformFeePercent()"] },
-      {
-        page: "Creator Withdrawal",
-        functions: ["releaseMilestoneFunds()", "getUserContribution()"],
-      },
+      { page: "Creator Withdrawal", functions: ["releaseMilestoneFunds()", "getUserContribution()"] },
     ];
 
     integrationPoints.forEach((point) => {
-      log(colors.green, `✅ ${point.page}`);
-      point.functions.forEach((func) => {
-        log(colors.green, `   ├─ ${func}`);
-      });
+      log(colors.green, ` ${point.page}`);
+      point.functions.forEach((func) => log(colors.green, `   ├─ ${func}`));
     });
 
-    // Summary
-    log(
-      colors.bright + colors.green,
-      "\n✨ Backend Integration Summary\n"
-    );
-    log(colors.green, "Network: Sepolia Testnet");
-    log(colors.green, "Contract Address:", CONTRACT_ADDRESS);
-    log(colors.green, "Deployer Wallet:", address);
-    log(colors.green, "Account Balance:", balanceEth, "ETH");
-    log(colors.green, "Total Integration Points: 5 pages");
-    log(colors.green, "Smart Contract Functions: 6 core functions");
+    log(colors.bright + colors.green, "\nIntegration Summary Complete\n");
 
-    log(colors.bright + colors.blue, "\n✅ Backend is ready for testing!\n");
   } catch (error) {
     log(colors.red, "\n❌ Test failed:", error.message);
     process.exit(1);

@@ -1,6 +1,6 @@
 import { ethers } from "ethers"
 
-export const CONTRACT_ADDRESS = "0x1D6FB3A2F9928E84d8D0f7E695869b03Ed158816" // Update this after deployment
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || ""
 
 export const CONTRACT_ABI = [
   // Add the full ABI here after compilation
@@ -137,7 +137,7 @@ export const isWalletConnected = async () => {
   return false
 }
 
-export const formatEther = (value: string) => {
+export const formatEther = (value: string | bigint) => {
   return ethers.formatEther(value)
 }
 
@@ -173,8 +173,7 @@ export const getContractOwner = async () => {
     const provider = getProvider()
     if (!provider || !isContractDeployed()) return null
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
-    const owner = await contract.owner()
-    return owner
+    return await contract.owner()
   } catch (e) {
     console.error("getContractOwner error", e)
     return null
@@ -185,8 +184,7 @@ export const getContractBalance = async () => {
   try {
     const provider = getProvider()
     if (!provider || !isContractDeployed()) return "0"
-    const balance = await provider.getBalance(CONTRACT_ADDRESS)
-    return balance.toString()
+    return (await provider.getBalance(CONTRACT_ADDRESS)).toString()
   } catch (e) {
     console.error("getContractBalance error", e)
     return "0"
@@ -209,8 +207,7 @@ export const getCampaignCount = async () => {
     const provider = getProvider()
     if (!provider || !isContractDeployed()) return 0
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
-    const count = await contract.campaignCounter()
-    return Number(count.toString())
+    return Number((await contract.campaignCounter()).toString())
   } catch (e) {
     console.error("getCampaignCount error", e)
     return 0

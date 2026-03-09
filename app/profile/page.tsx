@@ -7,8 +7,7 @@ import { ArrowRight, Loader, AlertCircle, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { getContract, connectWallet, isWalletConnected } from "@/lib/web3"
-import { formatEther } from "ethers"
+import { getContract, connectWallet, isWalletConnected, formatEther, getSigner } from "@/lib/web3"
 
 interface Campaign {
   id: number
@@ -41,10 +40,10 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
 
   const campaignStatusLabels: Record<number, string> = {
-    0: "🟢 Active",
-    1: "✅ Successful",
-    2: "❌ Failed",
-    3: "⏸️ Cancelled",
+    0: "Active",
+    1: "Successful",
+    2: "Failed",
+    3: "Cancelled",
   }
 
   const campaignStatusColors: Record<number, string> = {
@@ -54,33 +53,42 @@ export default function ProfilePage() {
     3: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100",
   }
 
-  const loadUserData = async () => {
+  const loadUserData = async (isMounted?: boolean) => {
     try {
       setLoading(true)
       setError(null)
 
       const connected = await isWalletConnected()
       if (!connected) {
-        setError("Please connect your wallet to view your profile")
-        setLoading(false)
+        if (isMounted !== false) {
+          setError("Please connect your wallet to view your profile")
+          setLoading(false)
+        }
         return
       }
 
       const contract = await getContract()
       if (!contract) {
-        setError("Failed to connect to contract")
-        setLoading(false)
+        if (isMounted !== false) {
+          setError("Failed to connect to contract")
+          setLoading(false)
+        }
         return
       }
 
-      const signer = await contract.runner?.provider?.getSigner()
+      const signer = await getSigner()
       if (!signer) {
-        setError("Could not get signer")
-        setLoading(false)
+        if (isMounted !== false) {
+          setError("Could not get signer")
+          setLoading(false)
+        }
         return
       }
 
       const address = await signer.getAddress()
+      
+      if (isMounted === false) return
+
       setUserAddress(address)
 
       // Get campaign counter
@@ -90,9 +98,11 @@ export default function ProfilePage() {
       // Load created campaigns and contributions
       const created: Campaign[] = []
       const contributed: Contribution[] = []
-      let totalContrib = 0n
+      let totalContrib = BigInt(0)
 
       for (let i = 1; i <= totalCampaigns; i++) {
+        if (!isMounted) return
+        
         try {
           const campaignData = await contract.getCampaignDetails(i)
           const [
@@ -126,7 +136,7 @@ export default function ProfilePage() {
 
           // Check if user contributed
           const userContribution = await contract.getUserContribution(i, address)
-          if (userContribution > 0n) {
+          if (userContribution > BigInt(0)) {
             const contribAmount = formatEther(userContribution)
             contributed.push({
               campaignId: Number(id),
@@ -144,19 +154,57 @@ export default function ProfilePage() {
         }
       }
 
-      setCreatedCampaigns(created)
-      setContributedCampaigns(contributed)
-      setTotalContributed(formatEther(totalContrib))
+      if (isMounted) {
+        setCreatedCampaigns(created)
+        setContributedCampaigns(contributed)
+        setTotalContributed(formatEther(totalContrib))
+      }
     } catch (err) {
       console.error("Error loading profile:", err)
-      setError("Failed to load profile data. Please try again.")
+      if (isMounted) {
+        setError("Failed to load profile data. Please try again.")
+      }
     } finally {
-      setLoading(false)
+      if (isMounted) {
+        setLoading(false)
+      }
     }
   }
 
   useEffect(() => {
-    loadUserData()
+    let isMounted = true
+
+    const initialize = async () => {
+      try {
+        await loadUserData(isMounted)
+      } catch (error) {
+        console.error("Error initializing profile:", error)
+        if (isMounted) {
+          setError("Failed to load profile. Please try again.")
+        }
+      }
+    }
+
+    initialize()
+
+    // Listen for wallet account changes
+    const handleAccountsChanged = async () => {
+      if (isMounted) {
+        await loadUserData(isMounted)
+      }
+    }
+
+    if (typeof window !== "undefined" && window.ethereum) {
+      window.ethereum.on("accountsChanged", handleAccountsChanged)
+    }
+
+    // Cleanup
+    return () => {
+      isMounted = false
+      if (typeof window !== "undefined" && window.ethereum) {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
+      }
+    }
   }, [])
 
   const handleConnect = async () => {

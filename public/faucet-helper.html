@@ -216,7 +216,7 @@
     <p class="subtitle">Get test ETH for your testnet wallet</p>
     
     <div class="instructions">
-      <h3>⚡ Quick Start</h3>
+      <h3>Quick Start</h3>
       <ol>
         <li>Click the <strong>Alchemy Faucet</strong> button below</li>
         <li>Paste your wallet address (copy button provided)</li>
@@ -229,16 +229,16 @@
     <div class="wallet-info">
       <div class="wallet-label">Your Sepolia Wallet Address</div>
       <div id="address">0x8b3dfD81484530B484964fdFBD490530edE324e3</div>
-      <button class="copy-btn" onclick="copyToClipboard('address')">📋 Copy Address</button>
+      <button class="copy-btn" onclick="copyToClipboard('address')">Copy Address</button>
       
       <div class="wallet-label" style="margin-top: 15px;">Private Key (Keep Secret!)</div>
       <div id="privateKey">0x26f7d4e301245338855266999abfa9f4cb2b4f2f64490f01a40f3579d3ae636f</div>
-      <button class="copy-btn" onclick="copyToClipboard('privateKey')">📋 Copy Private Key</button>
+      <button class="copy-btn" onclick="copyToClipboard('privateKey')">Copy Private Key</button>
     </div>
     
     <div class="faucet-buttons">
       <a href="https://sepoliafaucet.com" target="_blank" class="faucet-btn primary">
-        ⚡ Open Alchemy Faucet (FASTEST)
+        Open Alchemy Faucet (FASTEST)
       </a>
       <a href="https://faucet.quicknode.com/ethereum/sepolia" target="_blank" class="faucet-btn">
         QuickNode
@@ -254,21 +254,21 @@
       <h3>After requesting ETH, check your balance:</h3>
       <p>Wait 1-2 minutes, then click below to verify you received it:</p>
       <a href="https://sepolia.etherscan.io/address/0x8b3dfD81484530B484964fdFBD490530edE324e3" target="_blank">
-        🔍 Check Balance on Etherscan
+        Check Balance on Etherscan
       </a>
     </div>
     
     <div class="metamask-section">
-      <h3>🦊 Add Wallet to MetaMask</h3>
+      <h3>Add Wallet to MetaMask</h3>
       <p><strong>1. Open MetaMask</strong> → Click account icon</p>
       <p><strong>2. Click "Import Account"</strong></p>
       <p><strong>3. Paste private key:</strong></p>
       <div class="wallet-info" style="margin: 10px 0; background: white; border: 1px solid #ffc107;">
         <div id="pkDisplay">0x26f7d4e301245338855266999abfa9f4cb2b4f2f64490f01a40f3579d3ae636f</div>
-        <button class="copy-btn" onclick="copyToClipboard('pkDisplay')" style="background: #ffc107; color: black;">📋 Copy</button>
+        <button class="copy-btn" onclick="copyToClipboard('pkDisplay')" style="background: #ffc107; color: black;">Copy</button>
       </div>
       <p><strong>4. Make sure MetaMask is set to Sepolia network</strong> (top-right dropdown)</p>
-      <p>✅ Done! You can now deploy with this wallet</p>
+      <p>Done! You can now deploy with this wallet</p>
     </div>
   </div>
   
@@ -280,7 +280,7 @@
       navigator.clipboard.writeText(text).then(() => {
         const btn = event.target;
         const originalText = btn.innerText;
-        btn.innerText = '✅ Copied!';
+        btn.innerText = 'Copied!';
         setTimeout(() => {
           btn.innerText = originalText;
         }, 2000);

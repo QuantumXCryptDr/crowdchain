@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { initDb, getCommunity, saveCommunity } from "@/lib/server/db2"
+import { initDb, getCommunity, saveCommunity } from "@/lib/server/db"
 
 initDb()
 

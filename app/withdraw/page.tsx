@@ -37,13 +37,65 @@ export default function CreatorWithdrawalPortal() {
   const router = useRouter()
 
   useEffect(() => {
-    checkWalletConnection()
+    let isMounted = true
+
+    const initialize = async () => {
+      try {
+        const connected = await isWalletConnected()
+        if (isMounted) {
+          setIsConnected(connected)
+        }
+      } catch (error) {
+        console.error("Error checking wallet connection:", error)
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    initialize()
+
+    // Listen for wallet connection changes
+    const handleAccountsChanged = () => {
+      if (isMounted) {
+        initialize()
+      }
+    }
+
+    if (typeof window !== "undefined" && window.ethereum) {
+      window.ethereum.on("accountsChanged", handleAccountsChanged)
+    }
+
+    return () => {
+      isMounted = false
+      if (typeof window !== "undefined" && window.ethereum) {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
+      }
+    }
   }, [])
 
   useEffect(() => {
+    let isMounted = true
+
+    const loadData = async () => {
+      try {
+        await loadSuccessfulCampaigns()
+        await getUserAddress()
+      } catch (error) {
+        console.error("Error loading data:", error)
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
     if (isConnected) {
-      loadSuccessfulCampaigns()
-      getUserAddress()
+      loadData()
+    }
+
+    return () => {
+      isMounted = false
     }
   }, [isConnected])
 

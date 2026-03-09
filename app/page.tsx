@@ -32,8 +32,42 @@ export default function HomePage() {
   useEffect(() => {
     // Only run on client side
     if (typeof window !== "undefined") {
-      checkWalletConnection()
-      loadCampaigns()
+      let isMounted = true
+
+      const initialize = async () => {
+        try {
+          await checkWalletConnection()
+          if (isMounted) {
+            await loadCampaigns()
+          }
+        } catch (error) {
+          console.error("Error initializing app:", error)
+          if (isMounted) {
+            setLoading(false)
+          }
+        }
+      }
+
+      initialize()
+
+      // Listen for wallet connection changes
+      const handleAccountsChanged = () => {
+        if (isMounted) {
+          checkWalletConnection()
+        }
+      }
+
+      if (window.ethereum) {
+        window.ethereum.on("accountsChanged", handleAccountsChanged)
+      }
+
+      // Cleanup
+      return () => {
+        isMounted = false
+        if (window.ethereum) {
+          window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
+        }
+      }
     } else {
       setLoading(false)
     }
