@@ -101,7 +101,10 @@ export const connectWallet = async () => {
                     symbol: "ETH",
                     decimals: 18,
                   },
-                  rpcUrls: ["https://sepolia.infura.io/v3/"],
+                  rpcUrls: [
+                    process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || "https://sepolia.infura.io/v3/",
+                    "https://1rpc.io/sepolia",
+                  ],
                   blockExplorerUrls: ["https://sepolia.etherscan.io/"],
                 },
               ],
