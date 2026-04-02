@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getContract, connectWallet, isWalletConnected, formatEther, getSigner } from "@/lib/web3"
+import { getSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 interface Campaign {
   id: number
@@ -38,6 +40,7 @@ export default function ProfilePage() {
   const [totalContributed, setTotalContributed] = useState("0")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   const campaignStatusLabels: Record<number, string> = {
     0: "Active",
@@ -208,6 +211,12 @@ export default function ProfilePage() {
   }, [])
 
   const handleConnect = async () => {
+    const session = await getSession()
+    if (!session) {
+      router.push("/signup")
+      return
+    }
+
     try {
       await connectWallet()
       await loadUserData()

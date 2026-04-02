@@ -15,6 +15,8 @@ import {
   getContractBalance,
   formatEther,
 } from "@/lib/web3"
+import { getSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function AdminPage() {
   const [connected, setConnected] = useState(false)
@@ -31,6 +33,7 @@ export default function AdminPage() {
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false)
   const [txHistory, setTxHistory] = useState<Array<{hash:string,action:string,ts:number}>>([])
   const [newFee, setNewFee] = useState<string>("")
+  const router = useRouter()
 
   useEffect(() => {
     ;(async () => {
@@ -78,6 +81,12 @@ export default function AdminPage() {
   }
 
   const handleConnect = async () => {
+    const session = await getSession()
+    if (!session) {
+      router.push("/signup")
+      return
+    }
+
     const ok = await connectWallet()
     setConnected(ok)
     if (ok) await refreshStats()

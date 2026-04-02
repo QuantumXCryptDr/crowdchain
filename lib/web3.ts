@@ -54,8 +54,7 @@ export const getContract = async () => {
       return null // Don't throw error, just return null
     }
 
-    // Request account access if needed
-    await provider.send("eth_requestAccounts", [])
+    // Get signer (this will work if wallet is already connected)
     const signer = await provider.getSigner()
 
     if (!isContractDeployed()) {
@@ -73,23 +72,55 @@ export const getContract = async () => {
 export const connectWallet = async () => {
   if (typeof window !== "undefined" && window.ethereum) {
     try {
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      })
+      console.log("Attempting to connect wallet...")
+      console.log("MetaMask detected:", !!window.ethereum)
+
+      // Check if MetaMask is available
+      if (!window.ethereum.isMetaMask) {
+        throw new Error("MetaMask is not installed. Please install MetaMask to connect your wallet.")
+      }
+
+      // Small delay to ensure MetaMask is ready
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Check if already connected
+      const existingAccounts = await window.ethereum.request({ method: "eth_accounts" })
+      console.log("Existing accounts:", existingAccounts)
+
+      let accounts;
+      if (!existingAccounts || existingAccounts.length === 0) {
+        // Request account access
+        console.log("Requesting account access...")
+        accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        })
+        console.log("Accounts received:", accounts)
+      } else {
+        accounts = existingAccounts
+        console.log("Using existing accounts:", accounts)
+      }
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error("No accounts found. Please unlock your MetaMask wallet.")
+      }
 
       // Check if we're on the correct network (Sepolia)
       const chainId = await window.ethereum.request({ method: "eth_chainId" })
+      console.log("Current chain ID:", chainId)
       const sepoliaChainId = "0xaa36a7" // 11155111 in hex
 
       if (chainId !== sepoliaChainId) {
+        console.log("Switching to Sepolia network...")
         try {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: sepoliaChainId }],
           })
         } catch (switchError: any) {
+          console.log("Switch error:", switchError)
           // This error code indicates that the chain has not been added to MetaMask
           if (switchError.code === 4902) {
+            console.log("Adding Sepolia network...")
             await window.ethereum.request({
               method: "wallet_addEthereumChain",
               params: [
@@ -109,17 +140,33 @@ export const connectWallet = async () => {
                 },
               ],
             })
+          } else {
+            throw switchError
           }
         }
       }
 
+      console.log("Wallet connected successfully")
       return accounts.length > 0
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to connect wallet:", error)
-      return false
+
+      // Provide more specific error messages
+      if (error.code === 4001) {
+        throw new Error("Connection rejected by user. Please approve the connection in MetaMask.")
+      } else if (error.code === -32002) {
+        throw new Error("Connection request already pending. Please check MetaMask.")
+      } else if (error.code === -32603) {
+        throw new Error("MetaMask internal error. Please try refreshing the page or restarting MetaMask.")
+      } else if (error.message) {
+        throw error
+      } else {
+        throw new Error("Failed to connect wallet. Please try again or check MetaMask.")
+      }
     }
+  } else {
+    throw new Error("MetaMask is not installed. Please install MetaMask to connect your wallet.")
   }
-  return false
 }
 
 export const isWalletConnected = async () => {
@@ -131,7 +178,7 @@ export const isWalletConnected = async () => {
   if (window.ethereum) {
     try {
       const accounts = await window.ethereum.request({ method: "eth_accounts" })
-      return accounts.length > 0
+      return accounts && accounts.length > 0
     } catch (error) {
       console.error("Error checking wallet connection:", error)
       return false

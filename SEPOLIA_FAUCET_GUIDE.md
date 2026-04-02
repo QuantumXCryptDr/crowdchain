@@ -1,4 +1,4 @@
-# 🚀 Sepolia Test ETH - Quick Guide
+# Sepolia Test ETH - Quick Guide
 
 ## Your Testnet Wallet
 **Address:** `0x8b3dfD81484530B484964fdFBD490530edE324e3`  

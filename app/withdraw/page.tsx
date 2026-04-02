@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"
 import { getContract, formatEther, getSigner, connectWallet, isWalletConnected } from "@/lib/web3"
 import { CampaignStatus } from "@/types/campaign"
 import { useToast } from "@/hooks/use-toast"
+import { getSession } from "next-auth/react"
 
 interface SuccessfulCampaign {
   id: number
@@ -111,6 +112,12 @@ export default function CreatorWithdrawalPortal() {
   }
 
   const handleConnectWallet = async () => {
+    const session = await getSession()
+    if (!session) {
+      router.push("/signup")
+      return
+    }
+
     const connected = await connectWallet()
     setIsConnected(connected)
     if (connected) {
