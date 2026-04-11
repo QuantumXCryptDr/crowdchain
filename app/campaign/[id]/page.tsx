@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Users, Clock, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { getContract, formatEther, parseEther, getSigner } from "@/lib/web3"
+import { ethers } from "ethers"
+import { getContract, getReadOnlyContract, formatEther, parseEther, getSigner } from "@/lib/web3"
 import { type Campaign, CampaignStatus, type Milestone } from "@/types/campaign"
 import { useToast } from "@/hooks/use-toast"
 import { marked } from "marked"
@@ -62,6 +63,19 @@ export default function CampaignDetailPage() {
       console.error("Failed to parse comment:", e)
       setParsedComments(prev => ({ ...prev, [id]: text }))
     }
+  }
+
+  const getSignedIdentity = async () => {
+    const signer = await getSigner()
+    if (!signer) {
+      return null
+    }
+
+    const walletAddress = await signer.getAddress()
+    const message = `CrowdChain community action for campaign ${campaignId}`
+    const signature = await signer.signMessage(message)
+
+    return { walletAddress, signature, message }
   }
 
   const storageKey = (suffix: string) => `campaign:${campaignId}:community:${suffix}`
@@ -126,9 +140,13 @@ export default function CampaignDetailPage() {
 
   const addComment = async () => {
     if (!newComment || newComment.trim().length === 0) return
-    const author = userAddress || "anonymous"
-    const body = { type: "comment", author, text: newComment.trim() }
+    const signedIdentity = await getSignedIdentity().catch(() => null)
+    const body = { type: "comment", text: newComment.trim(), ...signedIdentity }
     try {
+      if (!signedIdentity) {
+        throw new Error("Connect the creator wallet to create a poll")
+      }
+
       const res = await fetch(`/api/campaign/${campaignId}/community`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -149,7 +167,7 @@ export default function CampaignDetailPage() {
     }
 
     // Fallback locally
-    const entry = { id: `${Date.now()}-${Math.random()}`, author, text: newComment.trim(), createdAt: Date.now() }
+    const entry = { id: `${Date.now()}-${Math.random()}`, author: userAddress || "anonymous", text: newComment.trim(), createdAt: Date.now() }
     const next = [entry, ...comments]
     saveComments(next)
     setNewComment("")
@@ -167,7 +185,8 @@ export default function CampaignDetailPage() {
       toast({ title: "Error", description: "Provide at least two options", variant: "destructive" })
       return
     }
-    const body = { type: "poll", question: pollQuestion.trim(), options: opts, createdBy: userAddress || "anonymous" }
+    const signedIdentity = await getSignedIdentity().catch(() => null)
+    const body = { type: "poll", question: pollQuestion.trim(), options: opts, ...signedIdentity }
     try {
       const res = await fetch(`/api/campaign/${campaignId}/community`, {
         method: "POST",
@@ -187,32 +206,20 @@ export default function CampaignDetailPage() {
       }
     } catch (e) {
       console.error("createPoll error", e)
+      toast({ title: "Error", description: "Failed to create poll", variant: "destructive" })
+      return
     }
-
-    // fallback local
-    const poll = {
-      id: `${Date.now()}-${Math.random()}`,
-      question: pollQuestion.trim(),
-      options: opts.map((o, i) => ({ id: `opt-${i}`, text: o, votes: 0 })),
-      createdBy: userAddress || "anonymous",
-      createdAt: Date.now(),
-      voters: [],
-    }
-    const next = [poll, ...polls]
-    savePolls(next)
-    setPollQuestion("")
-    setPollOptionsText("")
-    toast({ title: "Poll created (local)" })
   }
 
   const votePoll = async (pollId: string, optionId: string) => {
-    const voter = userAddress || localStorage.getItem(`campaign:${campaignId}:anonVoterId`) || `anon-${Math.random()}`
-    if (!userAddress) localStorage.setItem(`campaign:${campaignId}:anonVoterId`, voter)
+    const signedIdentity = await getSignedIdentity().catch(() => null)
+    const voter = signedIdentity?.walletAddress || userAddress || localStorage.getItem(`campaign:${campaignId}:anonVoterId`) || `anon-${Math.random()}`
+    if (!signedIdentity?.walletAddress && !userAddress) localStorage.setItem(`campaign:${campaignId}:anonVoterId`, voter)
     try {
       const res = await fetch(`/api/campaign/${campaignId}/community`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "vote", pollId, optionId, voter }),
+        body: JSON.stringify({ type: "vote", pollId, optionId, voter, ...signedIdentity }),
       })
       if (res.ok) {
         const json = await res.json()
@@ -245,7 +252,13 @@ export default function CampaignDetailPage() {
       const form = new FormData()
       form.append("file", file)
       form.append("caption", caption)
-      form.append("uploader", userAddress || "anonymous")
+      const signedIdentity = await getSignedIdentity()
+      if (!signedIdentity) {
+        throw new Error("Connect the creator wallet to upload proof")
+      }
+      form.append("walletAddress", signedIdentity.walletAddress)
+      form.append("signature", signedIdentity.signature)
+      form.append("message", signedIdentity.message)
 
       const res = await fetch(`/api/campaign/${campaignId}/community`, { method: "POST", body: form })
       if (res.ok) {
@@ -259,18 +272,9 @@ export default function CampaignDetailPage() {
       }
     } catch (e) {
       console.error("uploadProof error", e)
+      toast({ title: "Error", description: "Failed to upload proof", variant: "destructive" })
+      return
     }
-
-    // fallback to local encoder
-    const reader = new FileReader()
-    reader.onload = () => {
-      const url = String(reader.result)
-      const entry = { id: `${Date.now()}-${Math.random()}`, url, caption, uploader: userAddress || "anonymous", createdAt: Date.now() }
-      const next = [entry, ...proofs]
-      saveProofs(next)
-      toast({ title: "Proof uploaded (local)" })
-    }
-    reader.readAsDataURL(file)
   }
 
   const getUserAddress = async () => {
@@ -287,7 +291,7 @@ export default function CampaignDetailPage() {
 
   const loadCampaignData = async () => {
     try {
-      const contract = await getContract()
+      const contract = getReadOnlyContract()
       if (contract) {
         // Load campaign details
         const details = await contract.getCampaignDetails(campaignId)

@@ -15,25 +15,45 @@ export const CONTRACT_ABI = [
   "function enablePremiumFeatures(uint256 _campaignId) external payable",
   "function campaignCounter() external view returns (uint256)",
   "function platformFeePercent() external view returns (uint256)",
+  "function owner() external view returns (address)",
+  "function getMilestone(uint256 _campaignId, uint256 _milestoneId) external view returns (string, uint256, uint256, uint8, uint256, uint256)",
+  "function getCampaignMilestoneCount(uint256 _campaignId) external view returns (uint256)",
   "function withdrawPlatformFunds() external",
   "function setPlatformFee(uint256 _newFeePercent) external",
   "event CampaignCreated(uint256 indexed campaignId, address indexed creator, string title, uint256 goalAmount)",
   "event ContributionMade(uint256 indexed campaignId, address indexed contributor, uint256 amount)",
 ]
 
+const FALLBACK_RPC_URL =
+  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ||
+  process.env.NEXT_PUBLIC_RPC_URL ||
+  "https://ethereum-sepolia-rpc.publicnode.com"
+
 export const getProvider = () => {
   if (typeof window !== "undefined" && window.ethereum) {
     return new ethers.BrowserProvider(window.ethereum)
+  }
+  if (FALLBACK_RPC_URL) {
+    return new ethers.JsonRpcProvider(FALLBACK_RPC_URL)
   }
   return null
 }
 
 export const getSigner = async () => {
   const provider = getProvider()
-  if (provider) {
+  if (provider instanceof ethers.BrowserProvider) {
     return await provider.getSigner()
   }
   return null
+}
+
+export const getReadOnlyContract = () => {
+  const provider = getProvider()
+  if (!provider || !isContractDeployed()) {
+    return null
+  }
+
+  return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
 }
 
 export const getContract = async () => {
@@ -44,7 +64,7 @@ export const getContract = async () => {
     }
 
     const provider = getProvider()
-    if (!provider) {
+    if (!(provider instanceof ethers.BrowserProvider)) {
       return null // Don't throw error, just return null
     }
 
@@ -207,9 +227,8 @@ export const isContractDeployed = () => {
 // --- Admin helper functions ---
 export const getPlatformFeePercent = async () => {
   try {
-    const provider = getProvider()
-    if (!provider || !isContractDeployed()) return null
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    const contract = getReadOnlyContract()
+    if (!contract) return null
     const fee = await contract.platformFeePercent()
     return Number(fee.toString())
   } catch (e) {
@@ -220,9 +239,8 @@ export const getPlatformFeePercent = async () => {
 
 export const getContractOwner = async () => {
   try {
-    const provider = getProvider()
-    if (!provider || !isContractDeployed()) return null
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    const contract = getReadOnlyContract()
+    if (!contract) return null
     return await contract.owner()
   } catch (e) {
     console.error("getContractOwner error", e)
@@ -254,9 +272,8 @@ export const getSignerAddress = async () => {
 
 export const getCampaignCount = async () => {
   try {
-    const provider = getProvider()
-    if (!provider || !isContractDeployed()) return 0
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    const contract = getReadOnlyContract()
+    if (!contract) return 0
     return Number((await contract.campaignCounter()).toString())
   } catch (e) {
     console.error("getCampaignCount error", e)

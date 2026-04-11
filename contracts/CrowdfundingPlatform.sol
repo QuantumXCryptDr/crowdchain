@@ -33,6 +33,8 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         CampaignStatus status;
         bool isPremium;
         uint256 milestoneCount;
+        uint256 totalMilestoneAmount;
+        uint256 totalReleasedAmount;
         mapping(uint256 => Milestone) milestones;
         mapping(address => uint256) contributions;
         address[] contributors;
@@ -117,7 +119,10 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         require(campaign.status == CampaignStatus.Successful, "Campaign must be successful");
         require(_amount > 0, "Milestone amount must be greater than 0");
         require(_deadline > block.timestamp, "Milestone deadline must be in the future");
-        require(_amount <= campaign.raisedAmount, "Milestone amount cannot exceed raised amount");
+        require(
+            campaign.totalMilestoneAmount + _amount <= campaign.raisedAmount,
+            "Milestones cannot exceed raised amount"
+        );
         require(bytes(_description).length > 0, "Description cannot be empty");
         require(bytes(_description).length <= 1000, "Description too long");
         
@@ -129,6 +134,7 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         milestone.status = MilestoneStatus.Pending;
         
         campaign.milestoneCount++;
+        campaign.totalMilestoneAmount += _amount;
         
         emit MilestoneCreated(_campaignId, milestoneId, _description, _amount);
     }
@@ -159,8 +165,13 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         Milestone storage milestone = campaign.milestones[_milestoneId];
         require(milestone.status == MilestoneStatus.Pending, "Milestone is not pending");
         require(milestone.votesFor > milestone.votesAgainst, "Milestone not approved by majority");
+        require(
+            campaign.totalReleasedAmount + milestone.amount <= campaign.raisedAmount,
+            "Insufficient campaign balance"
+        );
         
         milestone.status = MilestoneStatus.Approved;
+        campaign.totalReleasedAmount += milestone.amount;
         
         uint256 platformFee = (milestone.amount * platformFeePercent) / 100;
         uint256 creatorAmount = milestone.amount - platformFee;
@@ -256,6 +267,10 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
             milestone.votesFor,
             milestone.votesAgainst
         );
+    }
+
+    function getCampaignMilestoneCount(uint256 _campaignId) external view returns (uint256) {
+        return campaigns[_campaignId].milestoneCount;
     }
     
     function setPlatformFee(uint256 _newFeePercent) external onlyOwner {

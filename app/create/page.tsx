@@ -302,8 +302,8 @@ export default function CreateCampaignPage() {
                       <Calendar
                         mode="single"
                         selected={formData.deadline}
-                        onSelect={(date) => setFormData((prev) => ({ ...prev, deadline: date }))}
-                        disabled={(date) => date < new Date()}
+                        onSelect={(date: Date | undefined) => setFormData((prev) => ({ ...prev, deadline: date }))}
+                        disabled={(date: Date) => date < new Date()}
                         initialFocus
                       />
                     </PopoverContent>

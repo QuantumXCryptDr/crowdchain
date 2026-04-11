@@ -1,55 +1,37 @@
-const hre = require("hardhat")
+const hre = require("hardhat");
+require("dotenv").config();
+const fs = require("fs");
 
 async function main() {
-  console.log("Deploying CrowdfundingPlatform...")
+  const [deployer] = await hre.ethers.getSigners();
+  console.log("Deploying contracts with account:", deployer.address);
 
-  // Get the deployer account
-  const [deployer] = await hre.ethers.getSigners()
-  console.log("Deploying contracts with the account:", deployer.address)
+  const CrowdfundingPlatform = await hre.ethers.getContractFactory("CrowdfundingPlatform");
+  const crowdfunding = await CrowdfundingPlatform.deploy();
 
-  // Check balance
-  const balance = await hre.ethers.provider.getBalance(deployer.address)
-  console.log("Account balance:", hre.ethers.formatEther(balance), "ETH")
+  await crowdfunding.waitForDeployment();
+  const contractAddress = await crowdfunding.getAddress();
 
-  // Get the contract factory
-  const CrowdfundingPlatform = await hre.ethers.getContractFactory("CrowdfundingPlatform")
+  console.log("CrowdfundingPlatform deployed to:", contractAddress);
 
-  // Deploy the contract
-  const crowdfundingPlatform = await CrowdfundingPlatform.deploy()
+  // Determine if it's a local network
+  const isLocal = hre.network.name === "localhost" || hre.network.name === "hardhat";
 
-  // Wait for deployment to complete
-  await crowdfundingPlatform.waitForDeployment()
+  const envFile = `WEB3_STORAGE_TOKEN=${process.env.WEB3_STORAGE_TOKEN}
+NEXT_PUBLIC_CONTRACT_ADDRESS=${contractAddress}
+NEXT_PUBLIC_SEPOLIA_RPC_URL=${process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL}
+SEPOLIA_URL=${process.env.SEPOLIA_URL}
+PRIVATE_KEY=${process.env.PRIVATE_KEY}
+ALCHEMY_API_KEY=${process.env.ALCHEMY_API_KEY}
+ETHERSCAN_API_KEY=${process.env.ETHERSCAN_API_KEY}
+LOCAL_CONTRACT=${isLocal ? contractAddress : process.env.LOCAL_CONTRACT}
+`;
 
-  const address = await crowdfundingPlatform.getAddress()
-  console.log("CrowdfundingPlatform deployed to:", address)
-
-  // Verify contract on Etherscan (optional)
-  if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
-    console.log("Waiting for block confirmations...")
-    await crowdfundingPlatform.deploymentTransaction().wait(6)
-
-    console.log("Verifying contract...")
-    try {
-      await hre.run("verify:verify", {
-        address: address,
-        constructorArguments: [],
-      })
-      console.log("Contract verified successfully!")
-    } catch (e) {
-      console.log("Verification failed:", e.message)
-    }
-  }
-
-  console.log("\n=== Deployment Summary ===")
-  console.log("Contract Address:", address)
-  console.log("Network:", hre.network.name)
-  console.log("Deployer:", deployer.address)
-  console.log("Transaction Hash:", crowdfundingPlatform.deploymentTransaction().hash)
+  fs.writeFileSync(".env.local", envFile);
+  console.log(".env.local updated with new contract address!");
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, Target } from "lucide-react"
 import Link from "next/link"
-import { getContract, formatEther, connectWallet } from "@/lib/web3"
+import { getReadOnlyContract, formatEther, connectWallet } from "@/lib/web3"
 import { CampaignStatus } from "@/types/campaign"
 import { getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
@@ -111,7 +111,7 @@ export default function AnalyticsDashboard() {
         return
       }
 
-      const contract = await getContract()
+      const contract = getReadOnlyContract()
       if (!contract) {
         setCampaigns([])
         setLoading(false)

@@ -10,11 +10,15 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Wallet, Plus, TrendingUp, Users, Shield, Search, Filter, Home, Link as LinkIcon, UserPlus } from "lucide-react"
 import Link from "next/link"
-import { getContract, connectWallet, formatEther } from "@/lib/web3"
+import dynamic from "next/dynamic"
+import { getReadOnlyContract, connectWallet, formatEther } from "@/lib/web3"
 import { type Campaign, CampaignStatus } from "@/types/campaign"
-import ThreeBackground from "@/components/ThreeBackground"
 import { getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+
+const ThreeBackground = dynamic(() => import("@/components/ThreeBackground"), {
+  ssr: false,
+})
 
 declare global {
   interface Window {
@@ -149,9 +153,9 @@ export default function HomePage() {
         return
       }
 
-      const contract = await getContract()
+      const contract = getReadOnlyContract()
       if (!contract) {
-        console.log("Contract not available - wallet not connected or contract not deployed")
+        console.log("Contract not available - contract not deployed or no RPC configured")
         setCampaigns([])
         setLoading(false)
         return

@@ -1,0 +1,6 @@
+(await deployer.getBalance()).toString()
+clear
+await crowdfunding.deployed();
+(await deployer.getBalance()).toString()
+deployer.address
+const [deployer] = await ethers.getSigners()

@@ -79,8 +79,8 @@
       ]
     },
     "/home/voidwalker19/decentralized-crowdfunding/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
-      "lastModificationDate": 1754316716612,
-      "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
+      "lastModificationDate": 1775225622257,
+      "contentHash": "6e5efb502dd6652d12ad15eea2c5bdf4",
       "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -106,7 +106,9 @@
           }
         }
       },
-      "imports": [],
+      "imports": [
+        "./StorageSlot.sol"
+      ],
       "versionPragmas": [
         "^0.8.20"
       ],
@@ -148,6 +150,42 @@
       ],
       "artifacts": [
         "Context"
+      ]
+    },
+    "/home/voidwalker19/decentralized-crowdfunding/node_modules/@openzeppelin/contracts/utils/StorageSlot.sol": {
+      "lastModificationDate": 1775225622801,
+      "contentHash": "e656d64c4ce918f3d13030b91c935134",
+      "sourceName": "@openzeppelin/contracts/utils/StorageSlot.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "StorageSlot"
       ]
     }
   }

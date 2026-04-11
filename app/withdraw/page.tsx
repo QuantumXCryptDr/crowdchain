@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { getContract, formatEther, getSigner, connectWallet, isWalletConnected } from "@/lib/web3"
+import { getContract, getReadOnlyContract, formatEther, getSigner, connectWallet, isWalletConnected } from "@/lib/web3"
 import { CampaignStatus } from "@/types/campaign"
 import { useToast } from "@/hooks/use-toast"
 import { getSession } from "next-auth/react"
@@ -24,18 +24,29 @@ interface SuccessfulCampaign {
   isPremium: boolean
   platformFee: string
   withdrawableAmount: string
+  releaseableMilestones: Array<{
+    id: number
+    description: string
+    amount: string
+    votesFor: number
+    votesAgainst: number
+  }>
 }
 
 export default function CreatorWithdrawalPortal() {
   const [campaigns, setCampaigns] = useState<SuccessfulCampaign[]>([])
   const [userAddress, setUserAddress] = useState("")
   const [selectedCampaign, setSelectedCampaign] = useState<SuccessfulCampaign | null>(null)
-  const [withdrawalAddress, setWithdrawalAddress] = useState("")
+  const [selectedMilestoneId, setSelectedMilestoneId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [withdrawing, setWithdrawing] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+
+  useEffect(() => {
+    setSelectedMilestoneId(null)
+  }, [selectedCampaign?.id])
 
   useEffect(() => {
     let isMounted = true
@@ -134,7 +145,6 @@ export default function CreatorWithdrawalPortal() {
       if (signer) {
         const address = await signer.getAddress()
         setUserAddress(address)
-        setWithdrawalAddress(address)
       }
     } catch (error) {
       console.error("Error getting user address:", error)
@@ -148,7 +158,7 @@ export default function CreatorWithdrawalPortal() {
         return
       }
 
-      const contract = await getContract()
+      const contract = getReadOnlyContract()
       if (!contract) {
         setCampaigns([])
         setLoading(false)
@@ -173,11 +183,24 @@ export default function CreatorWithdrawalPortal() {
 
       const campaignDetails = await Promise.all(campaignPromises)
 
-      const successfulCampaigns = campaignDetails
-        .map((details, index) => {
+      const successfulCampaigns = (await Promise.all(campaignDetails.map(async (details: any, index: number) => {
           const raised = parseFloat(formatEther(details[6].toString()))
           const fee = (raised * Number(platformFeePercent)) / 100
           const withdrawable = raised - fee
+          const milestoneCount = Number(await contract.getCampaignMilestoneCount(index + 1))
+          const milestoneDetails = await Promise.all(
+            Array.from({ length: milestoneCount }, (_, milestoneId) => contract.getMilestone(index + 1, milestoneId)),
+          )
+          const releaseableMilestones = milestoneDetails
+            .map((milestone: any, milestoneId: number) => ({
+              id: milestoneId,
+              description: milestone[0],
+              amount: formatEther(milestone[1].toString()),
+              status: Number(milestone[3]),
+              votesFor: Number(milestone[4]),
+              votesAgainst: Number(milestone[5]),
+            }))
+            .filter((milestone) => milestone.status === 0 && milestone.votesFor > milestone.votesAgainst)
 
           return {
             id: index + 1,
@@ -189,9 +212,9 @@ export default function CreatorWithdrawalPortal() {
             status: details[8],
             platformFee: fee.toFixed(4),
             withdrawableAmount: withdrawable.toFixed(4),
+            releaseableMilestones: releaseableMilestones.map(({ status, ...milestone }) => milestone),
           }
-        })
-        .filter((c) => c.creator.toLowerCase() === userAddr.toLowerCase() && c.status === CampaignStatus.Successful)
+        }))).filter((c) => c.creator.toLowerCase() === userAddr.toLowerCase() && c.status === CampaignStatus.Successful)
 
       setCampaigns(successfulCampaigns as SuccessfulCampaign[])
       setLoading(false)
@@ -212,20 +235,10 @@ export default function CreatorWithdrawalPortal() {
       return
     }
 
-    if (!withdrawalAddress) {
+    if (selectedMilestoneId === null) {
       toast({
         title: "Error",
-        description: "Please enter a withdrawal address",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Validate Ethereum address
-    if (!/^0x[a-fA-F0-9]{40}$/.test(withdrawalAddress)) {
-      toast({
-        title: "Error",
-        description: "Invalid Ethereum address format",
+        description: "Please choose a releaseable milestone",
         variant: "destructive",
       })
       return
@@ -239,8 +252,7 @@ export default function CreatorWithdrawalPortal() {
         throw new Error("Contract not available")
       }
 
-      // Call releaseMilestoneFunds for the campaign
-      const tx = await contract.releaseMilestoneFunds(selectedCampaign.id, 0)
+      const tx = await contract.releaseMilestoneFunds(selectedCampaign.id, selectedMilestoneId)
       
       toast({
         title: "Processing",
@@ -251,11 +263,11 @@ export default function CreatorWithdrawalPortal() {
 
       toast({
         title: "Success!",
-        description: `Withdrawn ${selectedCampaign.withdrawableAmount} ETH from campaign "${selectedCampaign.title}"`,
+        description: `Released milestone funds for campaign "${selectedCampaign.title}"`,
       })
 
       setSelectedCampaign(null)
-      setWithdrawalAddress("")
+      setSelectedMilestoneId(null)
       
       // Reload campaigns
       await loadSuccessfulCampaigns()
@@ -422,23 +434,29 @@ export default function CreatorWithdrawalPortal() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="withdrawAddress">Withdrawal Address</Label>
-                        <Input
-                          id="withdrawAddress"
-                          placeholder="0x..."
-                          value={withdrawalAddress}
-                          onChange={(e) => setWithdrawalAddress(e.target.value)}
-                          className="font-mono"
-                        />
+                        <Label htmlFor="milestone">Approved Milestone</Label>
+                        <select
+                          id="milestone"
+                          value={selectedMilestoneId ?? ""}
+                          onChange={(e) => setSelectedMilestoneId(e.target.value === "" ? null : Number(e.target.value))}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="">Select a milestone</option>
+                          {selectedCampaign.releaseableMilestones.map((milestone) => (
+                            <option key={milestone.id} value={milestone.id}>
+                              {milestone.description} ({milestone.amount} ETH)
+                            </option>
+                          ))}
+                        </select>
                         <p className="text-xs text-gray-500">
-                          Make sure this is a valid Ethereum address
+                          Funds are always released to the campaign creator wallet on-chain.
                         </p>
                       </div>
 
                       <Alert className="bg-blue-50 border-blue-200">
                         <AlertCircle className="h-4 w-4 text-blue-600" />
                         <AlertDescription className="text-blue-900">
-                          Funds will be transferred to the specified address after approval
+                          Only milestones with more approvals than rejections can be released.
                         </AlertDescription>
                       </Alert>
 

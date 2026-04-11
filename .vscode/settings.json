@@ -10,6 +10,8 @@
     "python.testing.unittestEnabled": true,
     "cSpell.words": [
         "apikey",
+        "cmdk",
+        "crowdchain",
         "drei",
         "Funder",
         "Funders",
@@ -18,11 +20,16 @@
         "linecap",
         "linejoin",
         "morphism",
+        "nextauth",
+        "nomiclabs",
         "quicknode",
         "Reentrancy",
         "sepoliafaucet",
         "shadcn",
         "Sidechain",
-        "Solana"
+        "Solana",
+        "timeago",
+        "typechain",
+        "vaul"
     ]
 }
