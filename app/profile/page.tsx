@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, type SyntheticEvent } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, Loader, AlertCircle, Plus } from "lucide-react"
@@ -227,12 +227,12 @@ export default function ProfilePage() {
 
   if (!userAddress) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4 py-12">
+      <div className="min-h-screen web3-shell-soft px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-20">
             <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Your Profile</h1>
             <p className="text-lg text-slate-600 dark:text-slate-400 mb-8">Connect your wallet to view your campaigns and contributions</p>
-            <Button onClick={handleConnect} size="lg" className="bg-purple-600 hover:bg-purple-700">
+            <Button onClick={handleConnect} size="lg" className="web3-button">
               Connect Wallet
             </Button>
           </div>
@@ -242,7 +242,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4 py-12">
+    <div className="min-h-screen web3-shell-soft px-4 py-12">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -262,7 +262,7 @@ export default function ProfilePage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <Card className="web3-soft-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Campaigns Created</CardTitle>
             </CardHeader>
@@ -272,7 +272,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <Card className="web3-soft-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Contributed</CardTitle>
             </CardHeader>
@@ -282,7 +282,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          <Card className="web3-soft-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Active Contributions</CardTitle>
             </CardHeader>
@@ -298,7 +298,7 @@ export default function ProfilePage() {
         {/* Campaigns Created Section */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader className="h-8 w-8 animate-spin text-purple-600" />
+            <Loader className="h-8 w-8 animate-spin web3-soft-accent" />
           </div>
         ) : (
           <>
@@ -307,7 +307,7 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Campaigns You Created</h2>
                 <Link href="/create">
-                  <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Button className="web3-button">
                     <Plus className="h-4 w-4 mr-2" />
                     New Campaign
                   </Button>
@@ -315,11 +315,11 @@ export default function ProfilePage() {
               </div>
 
               {createdCampaigns.length === 0 ? (
-                <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <Card className="web3-soft-card">
                   <CardContent className="pt-12 pb-12 text-center">
                     <p className="text-slate-600 dark:text-slate-400 mb-4">You haven't created any campaigns yet</p>
                     <Link href="/create">
-                      <Button variant="outline" className="border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20">
+                      <Button variant="outline" className="web3-outline-soft">
                         Create Your First Campaign
                       </Button>
                     </Link>
@@ -328,7 +328,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {createdCampaigns.map((campaign) => (
-                    <Card key={campaign.id} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-lg transition overflow-hidden">
+                    <Card key={campaign.id} className="web3-soft-card hover:shadow-lg transition overflow-hidden">
                       <div className="relative h-40 bg-slate-200 dark:bg-slate-700">
                         {campaign.imageUrl && campaign.imageUrl !== "" ? (
                           <Image
@@ -336,12 +336,12 @@ export default function ProfilePage() {
                             alt={campaign.title}
                             fill
                             className="object-cover"
-                            onError={(e) => {
+                            onError={(e: SyntheticEvent<HTMLImageElement>) => {
                               e.currentTarget.style.display = "none"
                             }}
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600" />
+                          <div className="w-full h-full web3-image-fallback" />
                         )}
                         <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold ${campaignStatusColors[campaign.status]}`}>
                           {campaignStatusLabels[campaign.status]}
@@ -360,7 +360,7 @@ export default function ProfilePage() {
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                             <div
-                              className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
+                              className="web3-progress-bar h-2 rounded-full"
                               style={{
                                 width: `${Math.min((parseFloat(campaign.raisedAmount) / parseFloat(campaign.goalAmount)) * 100, 100)}%`,
                               }}
@@ -373,7 +373,7 @@ export default function ProfilePage() {
                         </div>
 
                         <Link href={`/campaign/${campaign.id}`}>
-                          <Button variant="outline" className="w-full border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20">
+                          <Button variant="outline" className="w-full web3-outline-soft">
                             View Details
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>
@@ -390,18 +390,18 @@ export default function ProfilePage() {
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Campaigns You Support</h2>
 
               {contributedCampaigns.length === 0 ? (
-                <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <Card className="web3-soft-card">
                   <CardContent className="pt-12 pb-12 text-center">
                     <p className="text-slate-600 dark:text-slate-400 mb-4">You haven't contributed to any campaigns yet</p>
                     <Link href="/">
-                      <Button className="bg-purple-600 hover:bg-purple-700">Explore Campaigns</Button>
+                      <Button className="web3-button">Explore Campaigns</Button>
                     </Link>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {contributedCampaigns.map((contribution) => (
-                    <Card key={contribution.campaignId} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-lg transition overflow-hidden">
+                    <Card key={contribution.campaignId} className="web3-soft-card hover:shadow-lg transition overflow-hidden">
                       <div className="relative h-40 bg-slate-200 dark:bg-slate-700">
                         {contribution.imageUrl && contribution.imageUrl !== "" ? (
                           <Image
@@ -409,12 +409,12 @@ export default function ProfilePage() {
                             alt={contribution.title}
                             fill
                             className="object-cover"
-                            onError={(e) => {
+                            onError={(e: SyntheticEvent<HTMLImageElement>) => {
                               e.currentTarget.style.display = "none"
                             }}
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600" />
+                          <div className="w-full h-full web3-image-fallback" />
                         )}
                         <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold ${campaignStatusColors[contribution.status]}`}>
                           {campaignStatusLabels[contribution.status]}
@@ -426,7 +426,7 @@ export default function ProfilePage() {
                         <div className="space-y-3 mb-4">
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-slate-600 dark:text-slate-400">Your Contribution</span>
-                            <span className="font-bold text-purple-600">{parseFloat(contribution.amount).toFixed(4)} ETH</span>
+                            <span className="font-bold web3-soft-accent">{parseFloat(contribution.amount).toFixed(4)} ETH</span>
                           </div>
 
                           <div>
@@ -438,7 +438,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                               <div
-                                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
+                                className="web3-progress-bar h-2 rounded-full"
                                 style={{
                                   width: `${Math.min((parseFloat(contribution.raisedAmount) / parseFloat(contribution.goalAmount)) * 100, 100)}%`,
                                 }}
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                         </div>
 
                         <Link href={`/campaign/${contribution.campaignId}`}>
-                          <Button variant="outline" className="w-full border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20">
+                          <Button variant="outline" className="w-full web3-outline-soft">
                             View Campaign
                             <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>

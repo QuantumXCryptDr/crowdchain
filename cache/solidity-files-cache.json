@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/voidwalker19/decentralized-crowdfunding/contracts/CrowdfundingPlatform.sol": {
-      "lastModificationDate": 1773064728248,
-      "contentHash": "b5860d4b77f23b6dbde783025fbf50a8",
+      "lastModificationDate": 1775898407001,
+      "contentHash": "7d3740e72413eb768d4bdb03a253359d",
       "sourceName": "contracts/CrowdfundingPlatform.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -12,6 +12,7 @@
             "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
           "evmVersion": "paris",
           "outputSelection": {
             "*": {
@@ -41,7 +42,7 @@
       ]
     },
     "/home/voidwalker19/decentralized-crowdfunding/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
-      "lastModificationDate": 1754316716604,
+      "lastModificationDate": 1776099080937,
       "contentHash": "d3c790edc9ccf808a17c5a6cd13614fd",
       "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
       "solcConfig": {
@@ -51,6 +52,7 @@
             "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
           "evmVersion": "paris",
           "outputSelection": {
             "*": {
@@ -79,7 +81,7 @@
       ]
     },
     "/home/voidwalker19/decentralized-crowdfunding/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
-      "lastModificationDate": 1775225622257,
+      "lastModificationDate": 1776099081545,
       "contentHash": "6e5efb502dd6652d12ad15eea2c5bdf4",
       "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
       "solcConfig": {
@@ -89,6 +91,7 @@
             "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
           "evmVersion": "paris",
           "outputSelection": {
             "*": {
@@ -117,7 +120,7 @@
       ]
     },
     "/home/voidwalker19/decentralized-crowdfunding/node_modules/@openzeppelin/contracts/utils/Context.sol": {
-      "lastModificationDate": 1754316716392,
+      "lastModificationDate": 1776099075049,
       "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -127,6 +130,7 @@
             "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
           "evmVersion": "paris",
           "outputSelection": {
             "*": {
@@ -153,7 +157,7 @@
       ]
     },
     "/home/voidwalker19/decentralized-crowdfunding/node_modules/@openzeppelin/contracts/utils/StorageSlot.sol": {
-      "lastModificationDate": 1775225622801,
+      "lastModificationDate": 1776099082069,
       "contentHash": "e656d64c4ce918f3d13030b91c935134",
       "sourceName": "@openzeppelin/contracts/utils/StorageSlot.sol",
       "solcConfig": {
@@ -163,6 +167,7 @@
             "enabled": true,
             "runs": 200
           },
+          "viaIR": true,
           "evmVersion": "paris",
           "outputSelection": {
             "*": {

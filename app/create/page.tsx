@@ -191,41 +191,41 @@ export default function CreateCampaignPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#000080] to-[#87CEEB] relative overflow-hidden">
+    <div className="min-h-screen web3-shell relative overflow-hidden">
       {/* Radial light effects */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-sky-300/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-400/25 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-0 left-1/2 w-64 h-64 bg-cyan-300/20 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
+      <div className="web3-orb top-0 left-0 h-96 w-96 bg-emerald-400/20 -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="web3-orb top-1/2 right-0 h-80 w-80 bg-sky-400/20 translate-x-1/2 -translate-y-1/2"></div>
+      <div className="web3-orb bottom-0 left-1/2 h-64 w-64 bg-cyan-300/15 -translate-x-1/2 translate-y-1/2"></div>
 
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="mb-6">
           <Link href="/">
-            <Button variant="ghost" className="mb-4 text-white hover:bg-white/20 backdrop-blur-sm">
+            <Button variant="ghost" className="mb-4 text-white hover:bg-white/10 backdrop-blur-sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
           <h1 className="text-6xl font-bold text-white">Create New Campaign</h1>
-          <p className="text-cyan-300 mt-2">Launch your crowdfunding campaign on the blockchain</p>
+          <p className="web3-accent-text mt-2">Launch your crowdfunding campaign on the blockchain</p>
         </div>
 
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white/15 backdrop-blur-xl rounded-3xl border border-white/30 shadow-xl">
-            <div className="p-6 border-b border-white/30">
+          <div className="web3-panel rounded-3xl shadow-xl">
+            <div className="p-6 border-b border-cyan-300/15">
               <h2 className="text-2xl font-bold text-white">Campaign Details</h2>
-              <p className="text-white/70 mt-2">
+              <p className="web3-muted-text mt-2">
                 Fill In The Information About Your Campaign. All fields marked with * are required.
               </p>
             </div>
             <div className="p-6">
               {!isConnected && (
-                <div className="mb-6 p-4 bg-white/15 backdrop-blur-xl border border-white/30 rounded-2xl">
+                <div className="mb-6 p-4 web3-highlight rounded-2xl">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-white">Wallet Not Connected</h3>
-                      <p className="text-white/70">You need to connect your wallet to create a campaign</p>
+                      <p className="web3-muted-text">You need to connect your wallet to create a campaign</p>
                     </div>
-                    <Button onClick={handleConnectWallet} disabled={isCheckingConnection} className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30">
+                    <Button onClick={handleConnectWallet} disabled={isCheckingConnection} className="web3-button">
                       {isCheckingConnection ? "Checking..." : "Connect Wallet"}
                     </Button>
                   </div>
@@ -240,7 +240,7 @@ export default function CreateCampaignPage() {
                     value={formData.title}
                     onChange={(e) => handleInputChange("title", e.target.value)}
                     required
-                    className="bg-white/15 border-white/30 text-white placeholder:text-white/50 focus:border-cyan-400"
+                    className="bg-white/10 border-cyan-200/20 text-white placeholder:text-white/50 focus:border-cyan-300"
                   />
                 </div>
 
@@ -253,7 +253,7 @@ export default function CreateCampaignPage() {
                     value={formData.description}
                     onChange={(e) => handleInputChange("description", e.target.value)}
                     required
-                    className="bg-white/15 border-white/30 text-white placeholder:text-white/50 focus:border-cyan-400"
+                    className="bg-white/10 border-cyan-200/20 text-white placeholder:text-white/50 focus:border-cyan-300"
                   />
                 </div>
 
@@ -264,7 +264,7 @@ export default function CreateCampaignPage() {
                     placeholder="https://example.com/image.jpg"
                     value={formData.imageUrl}
                     onChange={(e) => handleInputChange("imageUrl", e.target.value)}
-                    className="bg-white/15 border-white/30 text-white placeholder:text-white/50 focus:border-cyan-400"
+                    className="bg-white/10 border-cyan-200/20 text-white placeholder:text-white/50 focus:border-cyan-300"
                   />
                   <p className="text-sm text-white/70">
                     Add an image to make your campaign more appealing. If left empty, a placeholder will be generated.
@@ -282,7 +282,7 @@ export default function CreateCampaignPage() {
                     value={formData.goalAmount}
                     onChange={(e) => handleInputChange("goalAmount", e.target.value)}
                     required
-                    className="bg-white/15 border-white/30 text-white placeholder:text-white/50 focus:border-cyan-400"
+                    className="bg-white/10 border-cyan-200/20 text-white placeholder:text-white/50 focus:border-cyan-300"
                   />
                   <p className="text-sm text-white/70">
                     Set a realistic funding goal in ETH. Remember, Contributors can see this amount.
@@ -293,12 +293,12 @@ export default function CreateCampaignPage() {
                   <Label className="text-white">Campaign Deadline *</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal bg-white/15 border-white/30 text-white hover:bg-white/20">
+                      <Button variant="outline" className="w-full justify-start text-left font-normal web3-outline">
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {formData.deadline ? format(formData.deadline, "PPP") : "Pick a date"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-white/15 backdrop-blur-xl border-white/30">
+                    <PopoverContent className="w-auto p-0 web3-panel">
                       <Calendar
                         mode="single"
                         selected={formData.deadline}
@@ -314,9 +314,9 @@ export default function CreateCampaignPage() {
                   </p>
                 </div>
 
-                <div className="bg-white/15 backdrop-blur-sm p-4 rounded-2xl border border-white/30">
+                <div className="web3-highlight p-4 rounded-2xl">
                   <h3 className="font-semibold text-white mb-2">Platform Information</h3>
-                  <ul className="text-white/80 space-y-1">
+                  <ul className="web3-muted-text space-y-1">
                     <li>• Platform fee: 2% of funds raised (only charged on successful campaigns)</li>
                     <li>• Milestone-based fund release available after campaign success</li>
                     <li>• Contributors can vote on milestone approvals</li>
@@ -324,7 +324,7 @@ export default function CreateCampaignPage() {
                   </ul>
                 </div>
 
-                <Button type="submit" className="w-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30" disabled={loading || !isConnected}>
+                <Button type="submit" className="w-full web3-button" disabled={loading || !isConnected}>
                   {loading ? "Creating Campaign..." : !isConnected ? "Connect Wallet First" : "Create Campaign"}
                 </Button>
               </form>

@@ -438,7 +438,7 @@ export default function CampaignDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen web3-shell-soft">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>
@@ -457,7 +457,7 @@ export default function CampaignDetailPage() {
 
   if (!campaign) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen web3-shell-soft">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Campaign Not Found</h1>
@@ -471,11 +471,11 @@ export default function CampaignDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen web3-shell-soft">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <Link href="/">
-            <Button variant="ghost" className="mb-4">
+            <Button variant="ghost" className="mb-4 web3-outline-soft">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Campaigns
             </Button>
@@ -490,7 +490,7 @@ export default function CampaignDetailPage() {
             {campaign.isPremium && <Badge className="bg-yellow-500">Premium</Badge>}
           </div>
 
-          <div className="h-64 bg-gradient-to-r from-blue-400 to-purple-500 rounded-lg mb-6 relative overflow-hidden">
+          <div className="h-64 web3-image-fallback rounded-lg mb-6 relative overflow-hidden">
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
               <div className="text-center text-white">
                 <h2 className="text-2xl font-bold mb-2">{campaign.title}</h2>
@@ -513,7 +513,7 @@ export default function CampaignDetailPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-2xl font-bold text-blue-600">{campaign.raisedAmount} ETH</p>
+                      <p className="text-2xl font-bold text-cyan-600">{campaign.raisedAmount} ETH</p>
                       <p className="text-gray-600">raised of {campaign.goalAmount} ETH goal</p>
                     </div>
                   </div>
@@ -568,7 +568,7 @@ export default function CampaignDetailPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                      <div className="w-10 h-10 web3-image-fallback rounded-full flex items-center justify-center text-white font-semibold">
                         {campaign.creator.slice(2, 4).toUpperCase()}
                       </div>
                       <div>
@@ -785,8 +785,8 @@ export default function CampaignDetailPage() {
                 )}
 
                 {Number.parseFloat(userContribution) > 0 && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100">
+                    <p className="text-sm text-cyan-900">
                       <strong>Your contribution:</strong> {userContribution} ETH
                     </p>
                     {(campaign.status === CampaignStatus.Failed ||

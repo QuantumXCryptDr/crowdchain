@@ -1,67 +1,44 @@
-'use client'
+"use client"
 
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
-import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
+const blocks = Array.from({ length: 16 }, (_, index) => {
+  const column = index % 4
+  const row = Math.floor(index / 4)
 
-function FloatingObject() {
-  const blocksRef = useRef<THREE.Mesh[]>([])
-
-  useFrame((state) => {
-    const time = state.clock.elapsedTime
-    blocksRef.current.forEach((block, index) => {
-      if (block) {
-        block.rotation.x = Math.sin(time + index * 0.5) * 0.2
-        block.rotation.y = Math.sin(time * 0.8 + index * 0.3) * 0.2
-        block.position.y = Math.sin(time * 0.5 + index * 0.4) * 0.3
-        // Deepest blue color
-        const color = new THREE.Color()
-        color.setHSL(0.6, 0.9, 0.1) // Deep blue
-        ;(block.material as THREE.MeshStandardMaterial).color = color
-      }
-    })
-  })
-
-  const blocks = []
-  const gridSize = 4
-  const spacing = 2
-  for (let i = 0; i < gridSize; i++) {
-    for (let j = 0; j < gridSize; j++) {
-      const x = (i - gridSize / 2) * spacing
-      const z = (j - gridSize / 2) * spacing - 5
-      blocks.push(
-        <mesh
-          key={`${i}-${j}`}
-          ref={(el) => {
-            if (el) blocksRef.current[i * gridSize + j] = el
-          }}
-          position={[x, 0, z]}
-        >
-          <boxGeometry args={[0.8, 0.8, 0.8]} />
-          <meshStandardMaterial transparent opacity={0.4} color="#000080" />
-        </mesh>
-      )
-    }
+  return {
+    id: index,
+    left: `${14 + column * 20}%`,
+    top: `${10 + row * 18}%`,
+    delay: `${index * 180}ms`,
+    duration: `${4200 + (index % 4) * 500}ms`,
+    rotate: `${(index % 3) * 8 - 8}deg`,
   }
-
-  return <group>{blocks}</group>
-}
+})
 
 export default function ThreeBackground() {
   return (
-    <div className="absolute inset-0 z-0">
-      <Canvas 
-        camera={{ position: [0, 0, 5], fov: 75 }}
-        gl={{ alpha: true }}
-        style={{ background: 'transparent' }}
-      >
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <FloatingObject />
-        <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} />
-      </Canvas>
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(45,212,191,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.12),transparent_32%)]" />
+
+      <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_82%,transparent)]">
+        {blocks.map((block) => (
+          <div
+            key={block.id}
+            className="float-block absolute h-20 w-20 rounded-2xl border border-cyan-200/10 bg-gradient-to-br from-emerald-300/12 via-cyan-300/10 to-sky-400/12 shadow-[0_0_30px_rgba(34,211,238,0.08)]"
+            style={{
+              left: block.left,
+              top: block.top,
+              animationDelay: block.delay,
+              animationDuration: block.duration,
+              transform: `rotate(${block.rotate})`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="absolute inset-x-0 top-[18%] h-px bg-gradient-to-r from-transparent via-cyan-300/18 to-transparent" />
+      <div className="absolute inset-x-0 top-[54%] h-px bg-gradient-to-r from-transparent via-emerald-300/12 to-transparent" />
+      <div className="absolute left-[24%] inset-y-0 w-px bg-gradient-to-b from-transparent via-sky-300/14 to-transparent" />
+      <div className="absolute left-[72%] inset-y-0 w-px bg-gradient-to-b from-transparent via-cyan-300/12 to-transparent" />
     </div>
   )
 }

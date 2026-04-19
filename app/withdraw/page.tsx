@@ -285,12 +285,12 @@ export default function CreatorWithdrawalPortal() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-        <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <div className="min-h-screen web3-shell-soft">
+        <header className="web3-soft-card sticky top-0 z-50 rounded-b-3xl mx-4 mt-4">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Withdrawal Dashboard</h1>
             <Link href="/">
-              <Button variant="ghost">
+              <Button variant="ghost" className="web3-outline-soft">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Home
               </Button>
@@ -299,7 +299,7 @@ export default function CreatorWithdrawalPortal() {
         </header>
 
         <main className="container mx-auto px-4 py-8">
-          <Card>
+          <Card className="web3-soft-card">
             <CardHeader>
               <CardTitle>Connect Your Wallet</CardTitle>
               <CardDescription>
@@ -307,7 +307,7 @@ export default function CreatorWithdrawalPortal() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleConnectWallet} className="w-full">
+              <Button onClick={handleConnectWallet} className="w-full web3-button">
                 Connect Wallet
               </Button>
             </CardContent>
@@ -318,17 +318,17 @@ export default function CreatorWithdrawalPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <header className="border-b border-purple-800/30 bg-slate-900/95 backdrop-blur-sm sticky top-0 z-50">
+    <div className="min-h-screen web3-shell">
+      <header className="web3-header sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/">
-            <Button variant="ghost" className="mb-0 text-purple-400 hover:text-purple-300">
+            <Button variant="ghost" className="mb-0 web3-accent-text hover:text-cyan-100">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
           <h1 className="text-2xl font-bold text-white">Creator Withdrawal Portal</h1>
-          <Badge variant="outline" className="bg-purple-600 text-white border-purple-400">
+          <Badge variant="outline" className="web3-outline">
             {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
           </Badge>
         </div>
@@ -336,7 +336,7 @@ export default function CreatorWithdrawalPortal() {
 
       <main className="container mx-auto px-4 py-8">
         {loading ? (
-          <Card>
+          <Card className="web3-soft-card">
             <CardContent className="py-8">
               <div className="text-center">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
@@ -345,13 +345,13 @@ export default function CreatorWithdrawalPortal() {
             </CardContent>
           </Card>
         ) : campaigns.length === 0 ? (
-          <Card>
+          <Card className="web3-soft-card">
             <CardContent className="py-8">
               <div className="text-center">
                 <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                 <p className="text-gray-500">You don't have any successful campaigns yet</p>
                 <Link href="/create">
-                  <Button className="mt-4">Create a Campaign</Button>
+                  <Button className="mt-4 web3-button">Create a Campaign</Button>
                 </Link>
               </div>
             </CardContent>
@@ -360,7 +360,7 @@ export default function CreatorWithdrawalPortal() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Campaign List */}
             <div className="lg:col-span-2">
-              <Card>
+              <Card className="web3-soft-card">
                 <CardHeader>
                   <CardTitle>Your Successful Campaigns</CardTitle>
                   <CardDescription>
@@ -374,8 +374,8 @@ export default function CreatorWithdrawalPortal() {
                       onClick={() => setSelectedCampaign(campaign)}
                       className={`p-4 border rounded-lg cursor-pointer transition ${
                         selectedCampaign?.id === campaign.id
-                          ? "border-blue-600 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-cyan-500 bg-cyan-500/10"
+                          : "border-slate-200/70 hover:border-cyan-200 dark:border-slate-700 dark:hover:border-cyan-700"
                       }`}
                     >
                       <div className="flex items-start justify-between">
@@ -388,7 +388,7 @@ export default function CreatorWithdrawalPortal() {
                             </div>
                             <div>
                               <p className="text-gray-500">Raised</p>
-                              <p className="font-semibold text-green-600">{campaign.raisedAmount} ETH</p>
+                              <p className="font-semibold text-emerald-600 dark:text-emerald-300">{campaign.raisedAmount} ETH</p>
                             </div>
                           </div>
                         </div>
@@ -404,7 +404,7 @@ export default function CreatorWithdrawalPortal() {
 
             {/* Withdrawal Form */}
             <div>
-              <Card>
+              <Card className="web3-soft-card">
                 <CardHeader>
                   <CardTitle>Withdraw Funds</CardTitle>
                   <CardDescription>
@@ -423,8 +423,8 @@ export default function CreatorWithdrawalPortal() {
 
                       <div className="space-y-2">
                         <Label>Withdrawable Amount</Label>
-                        <div className="p-3 bg-gray-50 border rounded-lg">
-                          <p className="text-2xl font-bold text-green-600">
+                        <div className="p-3 bg-cyan-50/70 dark:bg-cyan-950/20 border border-cyan-100 dark:border-cyan-900 rounded-lg">
+                          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">
                             {selectedCampaign.withdrawableAmount} ETH
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
@@ -453,9 +453,9 @@ export default function CreatorWithdrawalPortal() {
                         </p>
                       </div>
 
-                      <Alert className="bg-blue-50 border-blue-200">
-                        <AlertCircle className="h-4 w-4 text-blue-600" />
-                        <AlertDescription className="text-blue-900">
+                      <Alert className="bg-cyan-50 border-cyan-200 dark:bg-cyan-950/20 dark:border-cyan-900">
+                        <AlertCircle className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
+                        <AlertDescription className="text-cyan-900 dark:text-cyan-100">
                           Only milestones with more approvals than rejections can be released.
                         </AlertDescription>
                       </Alert>
@@ -463,7 +463,7 @@ export default function CreatorWithdrawalPortal() {
                       <Button
                         onClick={handleWithdraw}
                         disabled={withdrawing}
-                        className="w-full bg-green-600 hover:bg-green-700"
+                        className="w-full web3-button"
                       >
                         {withdrawing ? (
                           <>

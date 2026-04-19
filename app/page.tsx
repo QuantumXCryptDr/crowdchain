@@ -218,14 +218,14 @@ export default function HomePage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#000020] to-[#000080] relative overflow-hidden">
+    <div className="min-h-screen web3-shell relative overflow-hidden">
       <ThreeBackground />
       {/* Radial light effects */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-900/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-800/25 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-0 left-1/2 w-64 h-64 bg-blue-700/20 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
+      <div className="web3-orb top-0 left-0 h-96 w-96 bg-emerald-400/20 -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="web3-orb top-1/2 right-0 h-80 w-80 bg-sky-400/20 translate-x-1/2 -translate-y-1/2"></div>
+      <div className="web3-orb bottom-0 left-1/2 h-64 w-64 bg-cyan-300/15 -translate-x-1/2 translate-y-1/2"></div>
       {/* Header */}
-      <header className="border-b border-white/30 bg-white/15 backdrop-blur-xl sticky top-0 z-50 rounded-b-2xl mx-4 mt-4 shadow-2xl py-6">
+      <header className="web3-header sticky top-0 z-50 rounded-b-3xl mx-4 mt-4 py-6">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-white/20 rounded-full">
@@ -245,18 +245,18 @@ export default function HomePage() {
               </Button>
             </Link>
             <Link href="/create">
-              <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 transition-all duration-300 hover:translate-x-1 hover:-translate-y-1 hover:z-10 relative">
+              <Button className="web3-button transition-all duration-300 hover:translate-x-1 hover:-translate-y-1 hover:z-10 relative">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Campaign
               </Button>
             </Link>
             {!isConnected ? (
-              <Button onClick={handleConnectWallet} variant="outline" className="border-white/30 text-white hover:bg-white/20 backdrop-blur-sm transition-all duration-300 hover:translate-x-1 hover:-translate-y-1 hover:z-10 relative">
+              <Button onClick={handleConnectWallet} variant="outline" className="web3-outline backdrop-blur-sm transition-all duration-300 hover:translate-x-1 hover:-translate-y-1 hover:z-10 relative">
                 <Wallet className="h-4 w-4 mr-2" />
                 Connect Wallet
               </Button>
             ) : (
-              <Badge variant="secondary" className="bg-white/20 text-white border-white/30 backdrop-blur-sm transition-all duration-300 hover:translate-x-1 hover:-translate-y-1 hover:z-10 relative">
+              <Badge variant="secondary" className="web3-outline backdrop-blur-sm transition-all duration-300 hover:translate-x-1 hover:-translate-y-1 hover:z-10 relative">
                 <Wallet className="h-3 w-3 mr-1" />
                 Connected
               </Badge>
@@ -268,27 +268,27 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="py-20 text-center relative z-10">
         <div className="container mx-auto px-4">
-          <div className="bg-white/15 backdrop-blur-xl rounded-3xl p-8 border border-white/30 shadow-2xl max-w-4xl mx-auto">
+          <div className="web3-panel rounded-3xl p-8 max-w-4xl mx-auto">
             <h2 className="text-5xl font-bold text-white mb-6">Decentralized Crowdfunding</h2>
-            <p className="text-xl text-white/80 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl web3-muted-text mb-8 max-w-3xl mx-auto">
               Transparent, Secure, And Fee-Efficient Fundraising Powered By Blockchain Technology. Support Causes You
               Believe In With Complete Transparency And Milestone-Based Fund Releases.
             </p>
             <div className="flex justify-center space-x-8 mb-12">
-              <div className="bg-white/15 backdrop-blur-xl rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 shadow-xl">
-                <TrendingUp className="h-12 w-12 text-white mx-auto mb-2" />
+              <div className="web3-highlight rounded-2xl p-6 hover:bg-cyan-400/10 transition-all duration-300 shadow-xl">
+                <TrendingUp className="h-12 w-12 text-cyan-200 mx-auto mb-2" />
                 <h3 className="font-semibold text-white">Low Fees</h3>
-                <p className="text-white/70">Only 2% platform fee</p>
+                <p className="web3-muted-text">Only 2% platform fee</p>
               </div>
-              <div className="bg-white/15 backdrop-blur-xl rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 shadow-xl">
-                <Shield className="h-12 w-12 text-white mx-auto mb-2" />
+              <div className="web3-highlight rounded-2xl p-6 hover:bg-emerald-400/10 transition-all duration-300 shadow-xl">
+                <Shield className="h-12 w-12 text-emerald-200 mx-auto mb-2" />
                 <h3 className="font-semibold text-white">Transparent</h3>
-                <p className="text-white/70">All transactions on-chain</p>
+                <p className="web3-muted-text">All transactions on-chain</p>
               </div>
-              <div className="bg-white/15 backdrop-blur-xl rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 shadow-xl">
-                <Users className="h-12 w-12 text-white mx-auto mb-2" />
+              <div className="web3-highlight rounded-2xl p-6 hover:bg-sky-400/10 transition-all duration-300 shadow-xl">
+                <Users className="h-12 w-12 text-sky-200 mx-auto mb-2" />
                 <h3 className="font-semibold text-white">Community Driven</h3>
-                <p className="text-white/70">Milestone voting system</p>
+                <p className="web3-muted-text">Milestone voting system</p>
               </div>
             </div>
           </div>
@@ -301,9 +301,9 @@ export default function HomePage() {
           <h3 className="text-3xl font-bold mb-8 text-white text-center">Active Campaigns</h3>
 
           {/* Search & Filter Bar */}
-          <div className="mb-8 space-y-4">
+          <div className="mb-8 space-y-4" suppressHydrationWarning>
             {/* Search Bar */}
-            <div className="relative bg-white/15 backdrop-blur-xl rounded-2xl border border-white/30">
+            <div className="relative web3-panel rounded-2xl" suppressHydrationWarning>
               <Search className="absolute left-3 top-3 h-5 w-5 text-white/70" />
               <Input
                 placeholder="Search campaigns by title or description..."
@@ -314,7 +314,7 @@ export default function HomePage() {
             </div>
 
             {/* Filters Row */}
-            <div className="flex flex-col md:flex-row gap-4 items-center bg-white/15 backdrop-blur-xl rounded-2xl p-4 border border-white/30 shadow-xl">
+            <div className="flex flex-col md:flex-row gap-4 items-center web3-panel rounded-2xl p-4 shadow-xl">
               {/* Sort Dropdown */}
               <div className="flex items-center space-x-2">
                 <Filter className="h-5 w-5 text-white/70" />
@@ -360,10 +360,10 @@ export default function HomePage() {
 
           {/* No Results */}
           {!loading && filteredCampaigns.length === 0 && (
-            <div className="text-center py-12 bg-white/15 backdrop-blur-xl rounded-3xl p-8 border border-white/30">
+            <div className="text-center py-12 web3-panel rounded-3xl p-8">
               <p className="text-white text-lg mb-4">No campaigns found</p>
-              <p className="text-white/70 text-sm mb-6">Try adjusting your search or filters</p>
-              <Button onClick={() => { setSearchQuery(""); setSelectedStatus("active"); setSortBy("newest") }} variant="outline" className="border-white/30 text-white hover:bg-white/20 backdrop-blur-sm">
+              <p className="web3-muted-text text-sm mb-6">Try adjusting your search or filters</p>
+              <Button onClick={() => { setSearchQuery(""); setSelectedStatus("active"); setSortBy("newest") }} variant="outline" className="web3-outline backdrop-blur-sm">
                 Clear Filters
               </Button>
             </div>
@@ -372,7 +372,7 @@ export default function HomePage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white/15 backdrop-blur-xl rounded-3xl p-6 border border-white/30 animate-pulse">
+                <div key={i} className="web3-panel rounded-3xl p-6 animate-pulse">
                   <div className="h-48 bg-white/20 rounded-2xl mb-4"></div>
                   <div className="h-4 bg-white/20 rounded mb-2"></div>
                   <div className="h-3 bg-white/20 rounded mb-4"></div>
@@ -387,8 +387,8 @@ export default function HomePage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCampaigns.map((campaign) => (
-                <div key={campaign.id} className="bg-white/15 backdrop-blur-xl rounded-3xl overflow-hidden hover:bg-white/20 transition-all duration-300 border border-white/30 shadow-xl hover:shadow-2xl hover:scale-105">
-                  <div className="h-48 bg-gradient-to-r from-cyan-400 to-blue-500 relative">
+                <div key={campaign.id} className="web3-panel rounded-3xl overflow-hidden hover:bg-white/10 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105">
+                  <div className="h-48 web3-image-fallback relative">
                     {campaign.isPremium && <Badge className="absolute top-2 right-2 bg-yellow-400 text-black">Premium</Badge>}
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                       <h4 className="text-white text-lg font-semibold text-center px-4">{campaign.title}</h4>
@@ -403,20 +403,20 @@ export default function HomePage() {
                           <span>{getProgressPercentage(campaign.raisedAmount, campaign.goalAmount).toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-white/20 rounded-full h-2">
-                          <div className="bg-cyan-400 h-2 rounded-full" style={{ width: `${getProgressPercentage(campaign.raisedAmount, campaign.goalAmount)}%` }}></div>
+                          <div className="web3-progress-bar h-2 rounded-full" style={{ width: `${getProgressPercentage(campaign.raisedAmount, campaign.goalAmount)}%` }}></div>
                         </div>
                       </div>
                       <div className="flex justify-between text-sm text-white">
                         <span className="font-semibold">{campaign.raisedAmount} ETH raised</span>
-                        <span className="text-cyan-300">of {campaign.goalAmount} ETH</span>
+                        <span className="web3-accent-text">of {campaign.goalAmount} ETH</span>
                       </div>
                       <div className="flex justify-between text-sm text-white/70">
                         <span>{campaign.contributorCount} contributors</span>
-                        <span className="text-cyan-300">{formatTimeLeft(campaign.deadline)}</span>
+                        <span className="web3-accent-text">{formatTimeLeft(campaign.deadline)}</span>
                       </div>
                     </div>
                     <Link href={`/campaign/${campaign.id}`}>
-                      <Button className="w-full mt-4 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 transition-all duration-300">View Campaign</Button>
+                      <Button className="w-full mt-4 web3-outline backdrop-blur-sm transition-all duration-300">View Campaign</Button>
                     </Link>
                   </div>
                 </div>
@@ -427,7 +427,7 @@ export default function HomePage() {
       </section>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white/15 backdrop-blur-xl rounded-full px-6 py-3 border border-white/30 shadow-2xl z-50">
+      <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 web3-header rounded-full px-6 py-3 shadow-2xl z-50">
         <div className="flex space-x-8">
           <Link href="/" className="flex flex-col items-center text-white/70 hover:text-white transition-colors">
             <Home className="h-6 w-6" />

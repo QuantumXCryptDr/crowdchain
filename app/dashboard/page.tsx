@@ -197,28 +197,28 @@ export default function AnalyticsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#000080] to-[#87CEEB] relative overflow-hidden">
+    <div className="min-h-screen web3-shell relative overflow-hidden">
       {/* Radial light effects */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-sky-300/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute top-1/2 right-0 w-80 h-80 bg-blue-400/25 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-0 left-1/2 w-64 h-64 bg-cyan-300/20 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
-      <header className="border-b border-white/30 bg-white/15 backdrop-blur-xl sticky top-0 z-50 rounded-b-2xl mx-4 mt-4 shadow-2xl">
+      <div className="web3-orb top-0 left-0 h-96 w-96 bg-emerald-400/20 -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="web3-orb top-1/2 right-0 h-80 w-80 bg-sky-400/20 translate-x-1/2 -translate-y-1/2"></div>
+      <div className="web3-orb bottom-0 left-1/2 h-64 w-64 bg-cyan-300/15 -translate-x-1/2 translate-y-1/2"></div>
+      <header className="web3-header sticky top-0 z-50 rounded-b-3xl mx-4 mt-4">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/">
-            <Button variant="ghost" className="mb-0 text-white hover:bg-white/20 backdrop-blur-sm">
+            <Button variant="ghost" className="mb-0 text-white hover:bg-white/10 backdrop-blur-sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
           </Link>
           <h1 className="text-2xl font-bold text-white">Analytics & Fund Flow</h1>
           {!hasMetaMask ? (
-            <p className="text-sm text-white/70">Please install MetaMask to connect your wallet.</p>
+            <p className="text-sm web3-muted-text">Please install MetaMask to connect your wallet.</p>
           ) : !isConnected ? (
-            <Button onClick={handleConnectWallet} className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30">
+            <Button onClick={handleConnectWallet} className="web3-button">
               Connect Wallet
             </Button>
           ) : (
-            <Badge variant="outline" className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+            <Badge variant="outline" className="web3-outline backdrop-blur-sm">
               Connected
             </Badge>
           )}
@@ -228,7 +228,7 @@ export default function AnalyticsDashboard() {
       <main className="container mx-auto px-4 py-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white/15 backdrop-blur-xl rounded-3xl p-6 border border-white/30 shadow-xl">
+          <div className="web3-panel rounded-3xl p-6 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">Total Raised</CardTitle>
               <DollarSign className="h-4 w-4 text-cyan-300" />
@@ -239,7 +239,7 @@ export default function AnalyticsDashboard() {
             </CardContent>
           </div>
 
-          <div className="bg-white/15 backdrop-blur-xl rounded-3xl p-6 border border-white/30 shadow-xl">
+          <div className="web3-panel rounded-3xl p-6 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">Platform Fees</CardTitle>
               <TrendingDown className="h-4 w-4 text-blue-300" />
@@ -250,7 +250,7 @@ export default function AnalyticsDashboard() {
             </CardContent>
           </div>
 
-          <div className="bg-white/15 backdrop-blur-xl rounded-3xl p-6 border border-white/30 shadow-xl">
+          <div className="web3-panel rounded-3xl p-6 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">To Creators</CardTitle>
               <TrendingUp className="h-4 w-4 text-teal-300" />
@@ -261,7 +261,7 @@ export default function AnalyticsDashboard() {
             </CardContent>
           </div>
 
-          <div className="bg-white/15 backdrop-blur-xl rounded-3xl p-6 border border-white/30 shadow-xl">
+          <div className="web3-panel rounded-3xl p-6 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">Active Campaigns</CardTitle>
               <Target className="h-4 w-4 text-cyan-300" />
@@ -274,7 +274,7 @@ export default function AnalyticsDashboard() {
         </div>
 
         {/* Detailed Campaigns Table */}
-        <div className="bg-white/15 backdrop-blur-xl rounded-3xl p-6 border border-white/30 shadow-xl">
+        <div className="web3-panel rounded-3xl p-6 shadow-xl">
           <CardHeader>
             <CardTitle className="text-white">Campaign Fund Breakdown</CardTitle>
             <CardDescription className="text-white/70">
@@ -308,15 +308,15 @@ export default function AnalyticsDashboard() {
                       <tr key={campaign.id} className="border-b border-white/15 hover:bg-white/5 transition-colors">
                         <td className="py-3 px-4">
                           <Link href={`/campaign/${campaign.id}`}>
-                            <button className="text-cyan-300 hover:text-cyan-200 transition-colors truncate max-w-xs">
+                            <button className="web3-link transition-colors truncate max-w-xs">
                               {campaign.title}
                             </button>
                           </Link>
                         </td>
                         <td className="text-right py-3 px-4 text-white">{campaign.goalAmount} ETH</td>
                         <td className="text-right py-3 px-4 font-semibold text-white">{campaign.raisedAmount} ETH</td>
-                        <td className="text-right py-3 px-4 text-blue-300">{campaign.platformFee} ETH</td>
-                        <td className="text-right py-3 px-4 text-teal-300 font-semibold">{campaign.creatorAmount} ETH</td>
+                        <td className="text-right py-3 px-4 text-sky-300">{campaign.platformFee} ETH</td>
+                        <td className="text-right py-3 px-4 text-emerald-300 font-semibold">{campaign.creatorAmount} ETH</td>
                         <td className="text-center py-3 px-4">
                           <Badge className={`${getStatusColor(campaign.status)} text-white`}>
                             {getStatusLabel(campaign.status)}

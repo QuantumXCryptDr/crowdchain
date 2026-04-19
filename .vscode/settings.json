@@ -30,6 +30,7 @@
         "Solana",
         "timeago",
         "typechain",
-        "vaul"
+        "vaul",
+        "viem"
     ]
 }
