@@ -13,6 +13,7 @@ import {
   getContractOwner,
   getSignerAddress,
   getContractBalance,
+  CONTRACT_ADDRESS,
   formatEther,
 } from "@/lib/web3"
 import { getSession } from "next-auth/react"
@@ -49,7 +50,7 @@ export default function AdminPage() {
     setFee(f)
     setCampaigns(c)
     try {
-      setContractUrl(getEtherscanContractUrl())
+      setContractUrl(getEtherscanContractUrl(CONTRACT_ADDRESS))
     } catch {
       setContractUrl(null)
     }
