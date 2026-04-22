@@ -1,3 +1,5 @@
+"use client" 
+
 import { getContract } from "./web3.client"
 
 export const setPlatformFeePercent = async (fee: number) => {
