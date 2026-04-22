@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className="web3-shell antialiased" suppressHydrationWarning>
         <Providers>
           <div className="flex min-h-screen flex-col">
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 pb-24">{children}</main>
             <Footer />
           </div>
         </Providers>

@@ -14,7 +14,7 @@ import dynamic from "next/dynamic"
 import { getReadOnlyContract, connectWallet, formatEther } from "@/lib/web3"
 import { type Campaign, CampaignStatus } from "@/types/campaign"
 import { getSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
 const ThreeBackground = dynamic(() => import("@/components/ThreeBackground"), {
   ssr: false,
@@ -38,6 +38,16 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState<SortOption>("newest")
   const [showFilters, setShowFilters] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
+
+  const navItems = [
+    { href: "/", icon: Home, label: "Home" },
+    { href: "/create", icon: Plus, label: "Create" },
+    { href: "/dashboard", icon: TrendingUp, label: "Analytics" },
+    { href: "/profile", icon: Users, label: "Profile" },
+  ]
+
+  const activeIndex = navItems.findIndex(item => pathname.startsWith(item.href))
 
   useEffect(() => {
     // Only run on client side
@@ -427,24 +437,31 @@ export default function HomePage() {
       </section>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 web3-header rounded-full px-6 py-3 shadow-2xl z-50">
-        <div className="flex space-x-8">
-          <Link href="/" className="flex flex-col items-center text-white/70 hover:text-white transition-colors">
-            <Home className="h-6 w-6" />
-            <span className="text-xs mt-1">Home</span>
-          </Link>
-          <Link href="/create" className="flex flex-col items-center text-white/70 hover:text-white transition-colors">
-            <Plus className="h-6 w-6" />
-            <span className="text-xs mt-1">Create</span>
-          </Link>
-          <Link href="/dashboard" className="flex flex-col items-center text-white/70 hover:text-white transition-colors">
-            <TrendingUp className="h-6 w-6" />
-            <span className="text-xs mt-1">Analytics</span>
-          </Link>
-          <Link href="/profile" className="flex flex-col items-center text-white/70 hover:text-white transition-colors">
-            <Users className="h-6 w-6" />
-            <span className="text-xs mt-1">Profile</span>
-          </Link>
+      <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-96 web3-nav rounded-3xl px-8 py-4 shadow-2xl z-50 overflow-hidden">
+        <div className="flex relative">
+          {/* Sliding pill */}
+          <div
+            className="absolute bottom-0 left-0 h-1 bg-cyan-400 rounded-full transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(${activeIndex * 100}%)`, width: '25%' }}
+          />
+          {navItems.map((item, index) => {
+            const Icon = item.icon
+            const isActive = index === activeIndex
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex-1 flex flex-col items-center py-2 px-2 relative transition-colors duration-300 ${
+                  isActive ? 'text-cyan-300' : 'text-white/70 hover:text-white'
+                }`}
+              >
+                <Icon className="h-6 w-6" />
+                <span className={`text-xs mt-1 ${isActive ? 'font-medium' : ''}`}>
+                  {item.label}
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </nav>
     </div>

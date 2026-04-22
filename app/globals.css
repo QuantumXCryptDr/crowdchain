@@ -110,22 +110,23 @@
   }
 
   .web3-panel {
-    background: linear-gradient(180deg, rgba(9, 24, 38, 0.78), rgba(10, 27, 44, 0.58));
-    border: 1px solid rgba(125, 211, 252, 0.18);
-    box-shadow: 0 24px 80px rgba(3, 13, 27, 0.36);
-    backdrop-filter: blur(22px);
+    background: rgba(9, 24, 38, 0.1);
+    border: 1px solid rgba(125, 211, 252, 0.35);
+    box-shadow: 0 35px 120px rgba(3, 13, 27, 0.6);
+    backdrop-filter: blur(40px);
   }
 
   .web3-header {
-    background: linear-gradient(180deg, rgba(7, 21, 34, 0.86), rgba(7, 23, 38, 0.72));
-    border: 1px solid rgba(125, 211, 252, 0.16);
-    box-shadow: 0 20px 65px rgba(2, 12, 27, 0.38);
-    backdrop-filter: blur(20px);
+    background: rgba(7, 21, 34, 0.2);
+    border: 1px solid rgba(125, 211, 252, 0.3);
+    box-shadow: 0 30px 100px rgba(2, 12, 27, 0.6);
+    backdrop-filter: blur(40px);
   }
 
   .web3-highlight {
-    background: linear-gradient(135deg, rgba(20, 184, 166, 0.18), rgba(14, 165, 233, 0.18));
-    border: 1px solid rgba(125, 211, 252, 0.18);
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.15), rgba(14, 165, 233, 0.15));
+    border: 1px solid rgba(125, 211, 252, 0.3);
+    backdrop-filter: blur(20px);
   }
 
   .web3-soft-card {
@@ -164,9 +165,10 @@
   }
 
   .web3-outline {
-    background: rgba(6, 20, 33, 0.18);
+    background: rgba(6, 20, 33, 0.1);
     color: #d1fae5;
-    border: 1px solid rgba(94, 234, 212, 0.3);
+    border: 1px solid rgba(94, 234, 212, 0.35);
+    backdrop-filter: blur(10px);
   }
 
   .web3-outline:hover {
@@ -181,8 +183,15 @@
   }
 
   .web3-outline-soft:hover {
-    background: rgba(14, 165, 233, 0.08);
-    color: #075985;
+    background: rgba(14, 165, 233, 0.12);
+    color: #cffafe;
+  }
+
+  .web3-nav {
+    background: linear-gradient(135deg, rgba(173, 216, 230, 0.02), rgba(144, 238, 144, 0.02));
+    border: 1px solid rgba(125, 211, 252, 0.1);
+    box-shadow: 0 8px 30px rgba(2, 12, 27, 0.2);
+    backdrop-filter: blur(10px);
   }
 
   .dark .web3-outline-soft {

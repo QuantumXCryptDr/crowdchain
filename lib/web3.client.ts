@@ -5,11 +5,14 @@ import { ethers } from "ethers"
 export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || ""
 
 const ABI = [
+  "function campaignCounter() view returns (uint256)",
+  "function platformFeePercent() view returns (uint256)",
+  "function owner() view returns (address)",
+  "function getCampaignDetails(uint256) view returns (uint256,address,string,string,string,uint256,uint256,uint256,uint8,bool,uint256)",
   "function contribute(uint256) external payable",
   "function createCampaign(string,string,string,uint256,uint256) external returns (uint256)",
   "function setPlatformFee(uint256) external",
   "function withdrawPlatformFunds() external",
-  "function owner() view returns (address)"
 ]
 
 export const connectWallet = async () => {
