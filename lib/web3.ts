@@ -1,12 +1,16 @@
 // lib/web3.ts - Single source of truth for all web3 imports
 
 export {
+  CONTRACT_ABI,
+  CONTRACT_ADDRESS,
+} from "./contract"
+
+export {
   getReadOnlyContract,
   getCampaignCount,
   getPlatformFeePercent,
   getContractOwner,
   getContractBalance,
-  CONTRACT_ADDRESS,
 } from "./web3.server"
 
 export {
@@ -39,14 +43,3 @@ export const getEtherscanTxUrl = (txHash: string): string =>
 
 export const getEtherscanContractUrl = (address: string): string =>
   `https://sepolia.etherscan.io/address/${address}`
-
-export const CONTRACT_ABI = [
-  "function campaignCounter() view returns (uint256)",
-  "function platformFeePercent() view returns (uint256)",
-  "function owner() view returns (address)",
-  "function getCampaignDetails(uint256) view returns (uint256,address,string,string,string,uint256,uint256,uint256,uint8,bool,uint256)",
-  "function contribute(uint256) external payable",
-  "function createCampaign(string,string,string,uint256,uint256) external returns (uint256)",
-  "function setPlatformFee(uint256) external",
-  "function withdrawPlatformFunds() external",
-]

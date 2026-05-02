@@ -1,34 +1,38 @@
 import { ethers } from "ethers"
+import { CONTRACT_ABI, CONTRACT_ADDRESS, RPC_URL } from "./contract"
 
-export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || ""
+let provider: ethers.JsonRpcProvider | null = null
 
-const RPC =
-  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ||
-  "https://ethereum-sepolia-rpc.publicnode.com"
+const getProvider = () => {
+  provider ??= new ethers.JsonRpcProvider(RPC_URL)
+  return provider
+}
 
-const provider = new ethers.JsonRpcProvider(RPC)
+export const getCampaignCount = async () => {
+  const contract = getReadOnlyContract()
+  if (!contract) return 0
+  return Number(await contract.campaignCounter())
+}
 
-const ABI = [
-  "function campaignCounter() view returns (uint256)",
-  "function platformFeePercent() view returns (uint256)",
-  "function owner() view returns (address)",
-  "function getCampaignDetails(uint256) view returns (uint256,address,string,string,string,uint256,uint256,uint256,uint8,bool,uint256)"
-]
+export const getPlatformFeePercent = async () => {
+  const contract = getReadOnlyContract()
+  if (!contract) return 0
+  return Number(await contract.platformFeePercent())
+}
 
-const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider)
-
-export const getCampaignCount = async () =>
-  Number(await contract.campaignCounter())
-
-export const getPlatformFeePercent = async () =>
-  Number(await contract.platformFeePercent())
-
-export const getContractOwner = async () =>
-  await contract.owner()
+export const getContractOwner = async () => {
+  const contract = getReadOnlyContract()
+  if (!contract) return ""
+  return contract.owner()
+}
 
 export const getContractBalance = async () => {
-  const bal = await provider.getBalance(CONTRACT_ADDRESS)
+  if (!CONTRACT_ADDRESS) return "0"
+  const bal = await getProvider().getBalance(CONTRACT_ADDRESS)
   return ethers.formatEther(bal)
 }
 
-export const getReadOnlyContract = () => contract
+export const getReadOnlyContract = () => {
+  if (!CONTRACT_ADDRESS) return null
+  return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, getProvider())
+}

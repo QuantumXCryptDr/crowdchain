@@ -47,7 +47,50 @@ export default function HomePage() {
     { href: "/profile", icon: Users, label: "Profile" },
   ]
 
-  const activeIndex = navItems.findIndex(item => pathname.startsWith(item.href))
+  const activeIndex = navItems.findIndex((item) =>
+    item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+  )
+
+  const normalizeSearchValue = (value: string) => value.trim().toLowerCase()
+
+  const getCampaignMatches = (query: string) => {
+    const normalizedQuery = normalizeSearchValue(query)
+    if (!normalizedQuery) return []
+
+    return campaigns.filter((campaign) => {
+      const normalizedTitle = normalizeSearchValue(campaign.title)
+      const normalizedDescription = normalizeSearchValue(campaign.description)
+
+      return (
+        normalizedTitle.includes(normalizedQuery) ||
+        normalizedDescription.includes(normalizedQuery)
+      )
+    })
+  }
+
+  const getPreferredCampaignMatch = (query: string) => {
+    const normalizedQuery = normalizeSearchValue(query)
+    if (!normalizedQuery) return null
+
+    const matches = getCampaignMatches(query)
+    const exactTitleMatch = matches.find(
+      (campaign) => normalizeSearchValue(campaign.title) === normalizedQuery
+    )
+
+    if (exactTitleMatch) return exactTitleMatch
+
+    const titleStartsWithMatch = matches.find((campaign) =>
+      normalizeSearchValue(campaign.title).startsWith(normalizedQuery)
+    )
+
+    if (titleStartsWithMatch) return titleStartsWithMatch
+
+    if (matches.length === 1) return matches[0]
+
+    return null
+  }
+
+  const searchSuggestions = searchQuery.trim() ? getCampaignMatches(searchQuery).slice(0, 5) : []
 
   useEffect(() => {
     // Only run on client side
@@ -157,9 +200,17 @@ export default function HomePage() {
 
   const loadCampaigns = async () => {
     try {
-      // Check if we're in the browser
+      const response = await fetch("/api/campaigns?status=all", { cache: "no-store" })
+      if (response.ok) {
+        const payload = await response.json()
+        if (payload.success) {
+          setCampaigns(payload.campaigns || [])
+          return
+        }
+      }
+
       if (typeof window === "undefined") {
-        setLoading(false)
+        setCampaigns([])
         return
       }
 
@@ -167,17 +218,14 @@ export default function HomePage() {
       if (!contract) {
         console.log("Contract not available - contract not deployed or no RPC configured")
         setCampaigns([])
-        setLoading(false)
         return
       }
 
       const campaignCount = await contract.campaignCounter()
       const campaignPromises = []
-
       for (let i = 1; i <= Number(campaignCount); i++) {
         campaignPromises.push(contract.getCampaignDetails(i))
       }
-
       const campaignDetails = await Promise.all(campaignPromises)
       const formattedCampaigns = campaignDetails.map((details, index) => ({
         id: index + 1,
@@ -193,13 +241,25 @@ export default function HomePage() {
         contributorCount: Number(details[10]),
       }))
 
-      setCampaigns(formattedCampaigns.filter((c) => c.status === CampaignStatus.Active))
+      setCampaigns(formattedCampaigns)
     } catch (error) {
       console.error("Error loading campaigns:", error)
       setCampaigns([])
     } finally {
       setLoading(false)
     }
+  }
+
+  const openCampaignFromSearch = (query: string) => {
+    const match = getPreferredCampaignMatch(query)
+    if (!match) return
+
+    router.push(`/campaign/${match.id}`)
+  }
+
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    openCampaignFromSearch(searchQuery)
   }
 
   const getProgressPercentage = (raised: string, goal: string) => {
@@ -308,20 +368,60 @@ export default function HomePage() {
       {/* Active Campaigns */}
       <section className="py-16 pb-24 relative z-10">
         <div className="container mx-auto px-4">
-          <h3 className="text-3xl font-bold mb-8 text-white text-center">Active Campaigns</h3>
+          <h3 className="text-3xl font-bold mb-8 text-white text-center">Live Campaigns</h3>
 
           {/* Search & Filter Bar */}
           <div className="mb-8 space-y-4" suppressHydrationWarning>
             {/* Search Bar */}
-            <div className="relative web3-panel rounded-2xl" suppressHydrationWarning>
-              <Search className="absolute left-3 top-3 h-5 w-5 text-white/70" />
-              <Input
-                placeholder="Search campaigns by title or description..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-transparent border-0 text-white placeholder:text-white/50 focus:ring-0"
-              />
-            </div>
+            <form onSubmit={handleSearchSubmit} className="space-y-3" suppressHydrationWarning>
+              <div className="relative web3-panel rounded-2xl" suppressHydrationWarning>
+                <Search className="absolute left-3 top-3 h-5 w-5 text-white/70" />
+                <Input
+                  placeholder="Search campaigns by title or description..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-28 bg-transparent border-0 text-white placeholder:text-white/50 focus:ring-0"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 web3-button"
+                  disabled={!getPreferredCampaignMatch(searchQuery)}
+                >
+                  Open Match
+                </Button>
+              </div>
+
+              {searchSuggestions.length > 0 && (
+                <div className="web3-panel rounded-2xl p-3">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/50 mb-3">
+                    Matching Campaigns
+                  </p>
+                  <div className="space-y-2">
+                    {searchSuggestions.map((campaign) => (
+                      <button
+                        key={campaign.id}
+                        type="button"
+                        onClick={() => openCampaignFromSearch(campaign.title)}
+                        className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:border-cyan-300/40 hover:bg-white/10"
+                      >
+                        <div>
+                          <p className="font-semibold text-white">{campaign.title}</p>
+                          <p className="text-sm text-white/60 line-clamp-1">{campaign.description}</p>
+                        </div>
+                        <div className="text-right text-sm text-cyan-200">
+                          <p>{campaign.raisedAmount} ETH</p>
+                          <p className="text-white/50">{getProgressPercentage(campaign.raisedAmount, campaign.goalAmount).toFixed(1)}%</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs text-white/50">
+                    Press Enter or use `Open Match` to jump straight to an exact or single best match.
+                  </p>
+                </div>
+              )}
+            </form>
 
             {/* Filters Row */}
             <div className="flex flex-col md:flex-row gap-4 items-center web3-panel rounded-2xl p-4 shadow-xl">

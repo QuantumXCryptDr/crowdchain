@@ -170,14 +170,28 @@ export default function CreateCampaignPage() {
         deadlineTimestamp,
       )
 
-      await tx.wait()
+      const receipt = await tx.wait()
+      const createdEvent = receipt?.logs
+        ?.map((log: any) => {
+          try {
+            return contract.interface.parseLog(log)
+          } catch {
+            return null
+          }
+        })
+        .find((log: any) => log?.name === "CampaignCreated")
+
+      const latestCampaignId =
+        createdEvent?.args?.campaignId !== undefined
+          ? Number(createdEvent.args.campaignId)
+          : Number(await contract.campaignCounter())
 
       toast({
         title: "Success!",
         description: "Your campaign has been created successfully",
       })
 
-      router.push("/")
+      router.push(`/campaign/${latestCampaignId}`)
     } catch (error: any) {
       console.error("Error creating campaign:", error)
       toast({

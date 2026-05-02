@@ -291,11 +291,24 @@ export default function CampaignDetailPage() {
 
   const loadCampaignData = async () => {
     try {
-      const contract = getReadOnlyContract()
-      if (contract) {
-        // Load campaign details
+      let nextCampaign: Campaign | null = null
+
+      const response = await fetch(`/api/campaign/${campaignId}`, { cache: "no-store" })
+      if (response.ok) {
+        const payload = await response.json()
+        if (payload.success) {
+          nextCampaign = payload.campaign
+        }
+      }
+
+      if (!nextCampaign) {
+        const contract = getReadOnlyContract()
+        if (!contract) {
+          throw new Error("Contract not available")
+        }
+
         const details = await contract.getCampaignDetails(campaignId)
-        const campaignData: Campaign = {
+        nextCampaign = {
           id: Number(campaignId),
           creator: details[1],
           title: details[2],
@@ -308,16 +321,24 @@ export default function CampaignDetailPage() {
           isPremium: details[9],
           contributorCount: Number(details[10]),
         }
-        setCampaign(campaignData)
-
-        // Load user contribution if connected
-        const signer = await getSigner()
-        if (signer) {
-          const address = await signer.getAddress()
-          const contribution = await contract.getUserContribution(campaignId, address)
-          setUserContribution(formatEther(contribution.toString()))
-        }
       }
+
+      setCampaign(nextCampaign)
+
+      const signer = await getSigner()
+      if (!signer) {
+        setUserContribution("0")
+        return
+      }
+
+      const contract = getReadOnlyContract()
+      if (!contract) {
+        return
+      }
+
+      const address = await signer.getAddress()
+      const contribution = await contract.getUserContribution(campaignId, address)
+      setUserContribution(formatEther(contribution.toString()))
     } catch (error) {
       console.error("Error loading campaign data:", error)
       toast({
