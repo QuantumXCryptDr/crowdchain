@@ -51,6 +51,12 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
     event FundsReleased(uint256 indexed campaignId, uint256 indexed milestoneId, uint256 amount);
     event RefundIssued(uint256 indexed campaignId, address indexed contributor, uint256 amount);
     event PremiumActivated(uint256 indexed campaignId);
+    event CampaignWithdrawalProcessed(
+        uint256 indexed campaignId,
+        address indexed recipient,
+        uint256 creatorAmount,
+        uint256 platformFee
+    );
     
     constructor() Ownable(msg.sender) {}
     
@@ -119,6 +125,7 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         require(campaign.status == CampaignStatus.Successful, "Campaign must be successful");
         require(_amount > 0, "Milestone amount must be greater than 0");
         require(_deadline > block.timestamp, "Milestone deadline must be in the future");
+        require(campaign.totalReleasedAmount < campaign.raisedAmount, "No funds remaining");
         require(
             campaign.totalMilestoneAmount + _amount <= campaign.raisedAmount,
             "Milestones cannot exceed raised amount"
@@ -183,6 +190,29 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
         require(creatorSuccess, "Creator payment failed");
         
         emit FundsReleased(_campaignId, _milestoneId, creatorAmount);
+    }
+
+    function withdrawCampaignFunds(uint256 _campaignId, address payable _recipient) external nonReentrant {
+        Campaign storage campaign = campaigns[_campaignId];
+        require(msg.sender == campaign.creator, "Only campaign creator can withdraw");
+        require(campaign.status == CampaignStatus.Successful, "Campaign must be successful");
+        require(_recipient != address(0), "Invalid recipient address");
+
+        uint256 remainingAmount = campaign.raisedAmount - campaign.totalReleasedAmount;
+        require(remainingAmount > 0, "No funds available to withdraw");
+
+        campaign.totalReleasedAmount += remainingAmount;
+
+        uint256 platformFee = (remainingAmount * platformFeePercent) / 100;
+        uint256 creatorAmount = remainingAmount - platformFee;
+
+        (bool platformSuccess, ) = payable(owner()).call{value: platformFee}("");
+        require(platformSuccess, "Platform fee transfer failed");
+
+        (bool recipientSuccess, ) = _recipient.call{value: creatorAmount}("");
+        require(recipientSuccess, "Recipient payment failed");
+
+        emit CampaignWithdrawalProcessed(_campaignId, _recipient, creatorAmount, platformFee);
     }
     
     function requestRefund(uint256 _campaignId) external nonReentrant {
@@ -271,6 +301,27 @@ contract CrowdfundingPlatform is ReentrancyGuard, Ownable {
 
     function getCampaignMilestoneCount(uint256 _campaignId) external view returns (uint256) {
         return campaigns[_campaignId].milestoneCount;
+    }
+
+    function getCampaignWithdrawalBreakdown(uint256 _campaignId) external view returns (
+        uint256 totalReleasedAmount,
+        uint256 remainingAmount,
+        uint256 platformFeeAmount,
+        uint256 creatorAmount,
+        bool canWithdraw
+    ) {
+        Campaign storage campaign = campaigns[_campaignId];
+        uint256 remaining = campaign.raisedAmount - campaign.totalReleasedAmount;
+        bool available = campaign.status == CampaignStatus.Successful && remaining > 0;
+        uint256 fee = available ? (remaining * platformFeePercent) / 100 : 0;
+
+        return (
+            campaign.totalReleasedAmount,
+            remaining,
+            fee,
+            available ? remaining - fee : 0,
+            available
+        );
     }
     
     function setPlatformFee(uint256 _newFeePercent) external onlyOwner {

@@ -12,7 +12,8 @@ import { ArrowLeft, Users, Clock, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { ethers } from "ethers"
-import { getContract, getReadOnlyContract, formatEther, parseEther, getSigner } from "@/lib/web3"
+import { getContract, getReadOnlyContract, formatEther, parseEther, getSigner, connectWallet } from "@/lib/web3"
+import { formatCampaign } from "@/lib/contract"
 import { type Campaign, CampaignStatus, type Milestone } from "@/types/campaign"
 import { useToast } from "@/hooks/use-toast"
 import { marked } from "marked"
@@ -29,6 +30,7 @@ export default function CampaignDetailPage() {
   const [contributionAmount, setContributionAmount] = useState("")
   const [loading, setLoading] = useState(true)
   const [contributing, setContributing] = useState(false)
+  const [connectingWallet, setConnectingWallet] = useState(false)
   const [comments, setComments] = useState<Array<{id: string; author: string; text: string; createdAt: number}>>([])
   const [newComment, setNewComment] = useState("")
   const [polls, setPolls] = useState<
@@ -308,19 +310,7 @@ export default function CampaignDetailPage() {
         }
 
         const details = await contract.getCampaignDetails(campaignId)
-        nextCampaign = {
-          id: Number(campaignId),
-          creator: details[1],
-          title: details[2],
-          description: details[3],
-          imageUrl: details[4],
-          goalAmount: formatEther(details[5].toString()),
-          raisedAmount: formatEther(details[6].toString()),
-          deadline: Number(details[7]),
-          status: details[8] as CampaignStatus,
-          isPremium: details[9],
-          contributorCount: Number(details[10]),
-        }
+        nextCampaign = formatCampaign(details)
       }
 
       setCampaign(nextCampaign)
@@ -348,6 +338,32 @@ export default function CampaignDetailPage() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleConnectWallet = async () => {
+    setConnectingWallet(true)
+    try {
+      const connected = await connectWallet()
+      if (!connected) {
+        throw new Error("Wallet connection was cancelled")
+      }
+
+      await getUserAddress()
+      await loadCampaignData()
+      toast({
+        title: "Wallet connected",
+        description: "You can now fund this campaign.",
+      })
+    } catch (error: any) {
+      console.error("Error connecting wallet:", error)
+      toast({
+        title: "Connection failed",
+        description: error?.message || "Please try connecting your wallet again.",
+        variant: "destructive",
+      })
+    } finally {
+      setConnectingWallet(false)
     }
   }
 
@@ -775,7 +791,7 @@ export default function CampaignDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Contribution Card */}
-            <Card>
+            <Card id="fund-campaign">
               <CardHeader>
                 <CardTitle>Support This Campaign</CardTitle>
                 <CardDescription>
@@ -785,7 +801,18 @@ export default function CampaignDetailPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {campaign.status === CampaignStatus.Active && (
+                {campaign.status === CampaignStatus.Active && !userAddress && (
+                  <div className="rounded-lg border border-cyan-100 bg-cyan-50 p-4">
+                    <p className="text-sm text-cyan-900">
+                      Connect your wallet to choose this campaign and send funds securely on-chain.
+                    </p>
+                    <Button onClick={handleConnectWallet} className="mt-3 w-full" disabled={connectingWallet}>
+                      {connectingWallet ? "Connecting..." : "Connect Wallet to Contribute"}
+                    </Button>
+                  </div>
+                )}
+
+                {campaign.status === CampaignStatus.Active && userAddress && (
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="contribution">Contribution Amount (ETH)</Label>
@@ -799,7 +826,7 @@ export default function CampaignDetailPage() {
                         onChange={(e) => setContributionAmount(e.target.value)}
                       />
                     </div>
-                    <Button onClick={handleContribute} className="w-full" disabled={contributing || !userAddress}>
+                    <Button onClick={handleContribute} className="w-full" disabled={contributing}>
                       {contributing ? "Contributing..." : "Contribute Now"}
                     </Button>
                   </>

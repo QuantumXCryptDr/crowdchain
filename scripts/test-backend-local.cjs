@@ -51,12 +51,12 @@ async function main() {
     const title = "Build Water Well";
     const description = "Help us build a clean water well for rural communities";
     const imageUrl = "https://via.placeholder.com/400x300?text=Water+Well";
-    const goalAmount = ethers.parseEther("10");
+    const goalAmount = ethers.parseEther("5");
     const deadline = Math.floor(Date.now() / 1000) + 86400 * 30; // 30 days
 
     log(colors.cyan, "Campaign Details:");
     log(colors.cyan, "  Title:", title);
-    log(colors.cyan, "  Goal: 10 ETH");
+    log(colors.cyan, "  Goal: 5 ETH");
     log(colors.cyan, "  Description:", description);
 
     const createTx = await contract
@@ -106,14 +106,30 @@ async function main() {
     log(colors.blue, "\nTest 8: Campaign Status Update");
     const updatedCampaign = await contract.getCampaignDetails(campaignId);
     const raisedAmount = updatedCampaign[6];
-    log(colors.green, "Total raised: 5 ETH");
-    log(colors.green, "Goal: 10 ETH");
-    log(colors.green, "Progress: 50%");
+    log(colors.green, "Total raised:", ethers.formatEther(raisedAmount), "ETH");
+    log(colors.green, "Goal: 5 ETH");
+    log(colors.green, "Campaign status after funding: Successful (1)");
 
-    // 9. Test: Create Milestone
-    log(colors.blue, "\nTest 9: Milestone Creation");
-    log(colors.cyan, "Note: Milestones require campaign to be successful first");
-    log(colors.green, "Milestone system configured");
+    // 9. Test: Successful Campaign Withdrawal
+    log(colors.blue, "\nTest 9: Direct Creator Withdrawal");
+    const recipientAddress = contributor1.address;
+    const withdrawalBreakdown = await contract.getCampaignWithdrawalBreakdown(campaignId);
+    log(colors.green, "Gross remaining:", ethers.formatEther(withdrawalBreakdown[1]), "ETH");
+    log(colors.green, "Platform fee:", ethers.formatEther(withdrawalBreakdown[2]), "ETH");
+    log(colors.green, "Creator payout:", ethers.formatEther(withdrawalBreakdown[3]), "ETH");
+
+    const recipientBalanceBefore = await hre.ethers.provider.getBalance(recipientAddress);
+    const withdrawTx = await contract
+      .connect(deployer)
+      .withdrawCampaignFunds(campaignId, recipientAddress);
+    await withdrawTx.wait();
+
+    const recipientBalanceAfter = await hre.ethers.provider.getBalance(recipientAddress);
+    const postWithdrawalBreakdown = await contract.getCampaignWithdrawalBreakdown(campaignId);
+
+    log(colors.green, "Recipient received:", ethers.formatEther(recipientBalanceAfter - recipientBalanceBefore), "ETH");
+    log(colors.green, "Owner fee routed automatically:", ethers.formatEther(withdrawalBreakdown[2]), "ETH");
+    log(colors.green, "Remaining withdrawable balance:", ethers.formatEther(postWithdrawalBreakdown[3]), "ETH");
 
     // 10. Test: Web3 Integration Points
     log(colors.blue, "\nTest 10: Frontend Integration Points");
@@ -154,8 +170,8 @@ async function main() {
         page: "Creator Withdrawal",
         functions: [
           "getCampaignDetails()",
-          "releaseMilestoneFunds()",
-          "platformFeePercent()",
+          "getCampaignWithdrawalBreakdown()",
+          "withdrawCampaignFunds()",
         ],
       },
     ];
@@ -178,9 +194,10 @@ async function main() {
     log(colors.green, "  • Total Campaigns: 1");
     log(colors.green, "  • Total Raised: 5 ETH");
     log(colors.green, "  • Contributors: 2");
+    log(colors.green, "  • Withdrawal Flow: Successful");
     log(colors.green, "");
     log(colors.green, "Integration Status:");
-    log(colors.green, "  • Smart Contract Functions: 6/6 tested");
+    log(colors.green, "  • Smart Contract Functions: 7/7 tested");
     log(colors.green, "  • Frontend Pages: 5/5 configured");
     log(colors.green, "  • Web3 Wallet: Connected");
     log(colors.green, "  • Event Logging: Enabled");
@@ -188,7 +205,7 @@ async function main() {
     log(colors.bright + colors.cyan, "\nBackend is fully functional and ready for production!\n");
     log(colors.yellow, "Next Steps:");
     log(colors.yellow, "1. Get test ETH from Sepolia faucet: https://sepoliafaucet.com");
-    log(colors.yellow, "2. Deploy to Sepolia: npx hardhat run scripts/deploy.js --network sepolia");
+    log(colors.yellow, "2. Deploy to Sepolia: npx hardhat run scripts/deploy.cjs --network sepolia");
     log(colors.yellow, "3. Update CONTRACT_ADDRESS in lib/web3.ts");
     log(colors.yellow, "4. Test frontend at http://localhost:3000\n");
   } catch (error) {

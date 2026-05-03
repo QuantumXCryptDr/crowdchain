@@ -4,14 +4,12 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Wallet, Plus, TrendingUp, Users, Shield, Search, Filter, Home, Link as LinkIcon, UserPlus } from "lucide-react"
+import { Wallet, Plus, TrendingUp, Users, Shield, Search, Filter, Home, Link as LinkIcon } from "lucide-react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
-import { getReadOnlyContract, connectWallet, formatEther } from "@/lib/web3"
+import { getReadOnlyContract, connectWallet } from "@/lib/web3"
+import { formatCampaign } from "@/lib/contract"
 import { type Campaign, CampaignStatus } from "@/types/campaign"
 import { getSession } from "next-auth/react"
 import { useRouter, usePathname } from "next/navigation"
@@ -36,7 +34,6 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "successful" | "failed">("active")
   const [sortBy, setSortBy] = useState<SortOption>("newest")
-  const [showFilters, setShowFilters] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -91,6 +88,14 @@ export default function HomePage() {
   }
 
   const searchSuggestions = searchQuery.trim() ? getCampaignMatches(searchQuery).slice(0, 5) : []
+
+  const normalizeCampaign = (campaign: Campaign): Campaign => ({
+    ...campaign,
+    id: Number(campaign.id),
+    deadline: Number(campaign.deadline),
+    status: Number(campaign.status) as CampaignStatus,
+    contributorCount: Number(campaign.contributorCount),
+  })
 
   useEffect(() => {
     // Only run on client side
@@ -203,8 +208,8 @@ export default function HomePage() {
       const response = await fetch("/api/campaigns?status=all", { cache: "no-store" })
       if (response.ok) {
         const payload = await response.json()
-        if (payload.success) {
-          setCampaigns(payload.campaigns || [])
+        if (payload.success && Array.isArray(payload.campaigns) && payload.campaigns.length > 0) {
+          setCampaigns(payload.campaigns.map(normalizeCampaign))
           return
         }
       }
@@ -227,19 +232,7 @@ export default function HomePage() {
         campaignPromises.push(contract.getCampaignDetails(i))
       }
       const campaignDetails = await Promise.all(campaignPromises)
-      const formattedCampaigns = campaignDetails.map((details, index) => ({
-        id: index + 1,
-        creator: details[1],
-        title: details[2],
-        description: details[3],
-        imageUrl: details[4],
-        goalAmount: formatEther(details[5].toString()),
-        raisedAmount: formatEther(details[6].toString()),
-        deadline: Number(details[7]),
-        status: details[8] as CampaignStatus,
-        isPremium: details[9],
-        contributorCount: Number(details[10]),
-      }))
+      const formattedCampaigns = campaignDetails.map((details) => normalizeCampaign(formatCampaign(details)))
 
       setCampaigns(formattedCampaigns)
     } catch (error) {
@@ -525,9 +518,26 @@ export default function HomePage() {
                         <span className="web3-accent-text">{formatTimeLeft(campaign.deadline)}</span>
                       </div>
                     </div>
-                    <Link href={`/campaign/${campaign.id}`}>
-                      <Button className="w-full mt-4 web3-outline backdrop-blur-sm transition-all duration-300">View Campaign</Button>
-                    </Link>
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <Link href={`/campaign/${campaign.id}`}>
+                        <Button className="w-full web3-outline backdrop-blur-sm transition-all duration-300">
+                          View Campaign
+                        </Button>
+                      </Link>
+                      {campaign.status === CampaignStatus.Active ? (
+                        <Link href={`/campaign/${campaign.id}#fund-campaign`}>
+                          <Button className="w-full web3-button transition-all duration-300">
+                            Fund Campaign
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link href={`/campaign/${campaign.id}`}>
+                          <Button className="w-full web3-button transition-all duration-300">
+                            View Status
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

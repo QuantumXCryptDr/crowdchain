@@ -9,8 +9,8 @@
     "lint": "next lint",
     "hardhat": "hardhat",
     "compile:contracts": "hardhat compile",
-    "deploy:local": "hardhat run scripts/deploy.js",
-    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia"
+    "deploy:local": "hardhat run scripts/deploy.cjs",
+    "deploy:sepolia": "hardhat run scripts/deploy.cjs --network sepolia"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.15.9",

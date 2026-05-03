@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { ethers } from "ethers"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,23 +22,19 @@ interface SuccessfulCampaign {
   goalAmount: string
   raisedAmount: string
   creator: string
+  status: CampaignStatus
   isPremium: boolean
+  releasedAmount: string
+  remainingAmount: string
   platformFee: string
   withdrawableAmount: string
-  releaseableMilestones: Array<{
-    id: number
-    description: string
-    amount: string
-    votesFor: number
-    votesAgainst: number
-  }>
 }
 
 export default function CreatorWithdrawalPortal() {
   const [campaigns, setCampaigns] = useState<SuccessfulCampaign[]>([])
   const [userAddress, setUserAddress] = useState("")
   const [selectedCampaign, setSelectedCampaign] = useState<SuccessfulCampaign | null>(null)
-  const [selectedMilestoneId, setSelectedMilestoneId] = useState<number | null>(null)
+  const [withdrawAddress, setWithdrawAddress] = useState("")
   const [loading, setLoading] = useState(true)
   const [withdrawing, setWithdrawing] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
@@ -45,8 +42,10 @@ export default function CreatorWithdrawalPortal() {
   const router = useRouter()
 
   useEffect(() => {
-    setSelectedMilestoneId(null)
-  }, [selectedCampaign?.id])
+    if (selectedCampaign) {
+      setWithdrawAddress(userAddress)
+    }
+  }, [selectedCampaign?.id, userAddress])
 
   useEffect(() => {
     let isMounted = true
@@ -111,17 +110,6 @@ export default function CreatorWithdrawalPortal() {
     }
   }, [isConnected])
 
-  const checkWalletConnection = async () => {
-    if (typeof window === "undefined") return
-
-    const connected = await isWalletConnected()
-    setIsConnected(connected)
-
-    if (!connected) {
-      setLoading(false)
-    }
-  }
-
   const handleConnectWallet = async () => {
     const session = await getSession()
     if (!session) {
@@ -174,7 +162,6 @@ export default function CreatorWithdrawalPortal() {
 
       const userAddr = await signer.getAddress()
       const campaignCount = await contract.campaignCounter()
-      const platformFeePercent = await contract.platformFeePercent()
 
       const campaignPromises = []
       for (let i = 1; i <= Number(campaignCount); i++) {
@@ -183,38 +170,34 @@ export default function CreatorWithdrawalPortal() {
 
       const campaignDetails = await Promise.all(campaignPromises)
 
-      const successfulCampaigns = (await Promise.all(campaignDetails.map(async (details: any, index: number) => {
-          const raised = parseFloat(formatEther(details[6].toString()))
-          const fee = (raised * Number(platformFeePercent)) / 100
-          const withdrawable = raised - fee
-          const milestoneCount = Number(await contract.getCampaignMilestoneCount(index + 1))
-          const milestoneDetails = await Promise.all(
-            Array.from({ length: milestoneCount }, (_, milestoneId) => contract.getMilestone(index + 1, milestoneId)),
-          )
-          const releaseableMilestones = milestoneDetails
-            .map((milestone: any, milestoneId: number) => ({
-              id: milestoneId,
-              description: milestone[0],
-              amount: formatEther(milestone[1].toString()),
-              status: Number(milestone[3]),
-              votesFor: Number(milestone[4]),
-              votesAgainst: Number(milestone[5]),
-            }))
-            .filter((milestone) => milestone.status === 0 && milestone.votesFor > milestone.votesAgainst)
+      const successfulCampaigns = (
+        await Promise.all(
+          campaignDetails.map(async (details: any, index: number) => {
+            const status = Number(details[8]) as CampaignStatus
+            const breakdown = await contract.getCampaignWithdrawalBreakdown(index + 1)
 
-          return {
-            id: index + 1,
-            title: details[2],
-            goalAmount: formatEther(details[5].toString()),
-            raisedAmount: formatEther(details[6].toString()),
-            creator: details[1],
-            isPremium: details[9],
-            status: details[8],
-            platformFee: fee.toFixed(4),
-            withdrawableAmount: withdrawable.toFixed(4),
-            releaseableMilestones: releaseableMilestones.map(({ status, ...milestone }) => milestone),
-          }
-        }))).filter((c) => c.creator.toLowerCase() === userAddr.toLowerCase() && c.status === CampaignStatus.Successful)
+            return {
+              id: index + 1,
+              title: details[2],
+              goalAmount: formatEther(details[5].toString()),
+              raisedAmount: formatEther(details[6].toString()),
+              creator: details[1],
+              status,
+              isPremium: details[9],
+              releasedAmount: formatEther(breakdown[0].toString()),
+              remainingAmount: formatEther(breakdown[1].toString()),
+              platformFee: formatEther(breakdown[2].toString()),
+              withdrawableAmount: formatEther(breakdown[3].toString()),
+              canWithdraw: Boolean(breakdown[4]),
+            }
+          })
+        )
+      ).filter(
+        (campaign) =>
+          campaign.creator.toLowerCase() === userAddr.toLowerCase() &&
+          campaign.status === CampaignStatus.Successful &&
+          campaign.canWithdraw
+      )
 
       setCampaigns(successfulCampaigns as SuccessfulCampaign[])
       setLoading(false)
@@ -235,10 +218,19 @@ export default function CreatorWithdrawalPortal() {
       return
     }
 
-    if (selectedMilestoneId === null) {
+    if (!withdrawAddress.trim()) {
       toast({
         title: "Error",
-        description: "Please choose a releaseable milestone",
+        description: "Please enter the ETH address that should receive the payout",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!ethers.isAddress(withdrawAddress.trim())) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid Ethereum address",
         variant: "destructive",
       })
       return
@@ -252,22 +244,22 @@ export default function CreatorWithdrawalPortal() {
         throw new Error("Contract not available")
       }
 
-      const tx = await contract.releaseMilestoneFunds(selectedCampaign.id, selectedMilestoneId)
+      const tx = await contract.withdrawCampaignFunds(selectedCampaign.id, withdrawAddress.trim())
       
       toast({
         title: "Processing",
-        description: "Your withdrawal is being processed...",
+        description: "Your withdrawal is being processed on-chain...",
       })
 
       await tx.wait()
 
       toast({
         title: "Success!",
-        description: `Released milestone funds for campaign "${selectedCampaign.title}"`,
+        description: `Sent ${selectedCampaign.withdrawableAmount} ETH to ${withdrawAddress.trim()} after automatically routing the ${selectedCampaign.platformFee} ETH platform fee to the owner wallet.`,
       })
 
       setSelectedCampaign(null)
-      setSelectedMilestoneId(null)
+      setWithdrawAddress(userAddress)
       
       // Reload campaigns
       await loadSuccessfulCampaigns()
@@ -349,7 +341,7 @@ export default function CreatorWithdrawalPortal() {
             <CardContent className="py-8">
               <div className="text-center">
                 <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-500">You don't have any successful campaigns yet</p>
+                <p className="text-gray-500">You don't have any successful campaigns with withdrawable funds yet</p>
                 <Link href="/create">
                   <Button className="mt-4 web3-button">Create a Campaign</Button>
                 </Link>
@@ -387,10 +379,13 @@ export default function CreatorWithdrawalPortal() {
                               <p className="font-semibold">{campaign.goalAmount} ETH</p>
                             </div>
                             <div>
-                              <p className="text-gray-500">Raised</p>
-                              <p className="font-semibold text-emerald-600 dark:text-emerald-300">{campaign.raisedAmount} ETH</p>
+                              <p className="text-gray-500">Available Now</p>
+                              <p className="font-semibold text-emerald-600 dark:text-emerald-300">{campaign.withdrawableAmount} ETH</p>
                             </div>
                           </div>
+                          <p className="mt-3 text-xs text-gray-500">
+                            Gross remaining: {campaign.remainingAmount} ETH · Fee: {campaign.platformFee} ETH
+                          </p>
                         </div>
                         {campaign.isPremium && (
                           <Badge className="bg-yellow-100 text-yellow-800">Premium</Badge>
@@ -408,7 +403,7 @@ export default function CreatorWithdrawalPortal() {
                 <CardHeader>
                   <CardTitle>Withdraw Funds</CardTitle>
                   <CardDescription>
-                    Complete the withdrawal process
+                    Choose where the payout should be sent
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -422,41 +417,35 @@ export default function CreatorWithdrawalPortal() {
                       </Alert>
 
                       <div className="space-y-2">
-                        <Label>Withdrawable Amount</Label>
+                        <Label>Creator Payout</Label>
                         <div className="p-3 bg-cyan-50/70 dark:bg-cyan-950/20 border border-cyan-100 dark:border-cyan-900 rounded-lg">
                           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">
                             {selectedCampaign.withdrawableAmount} ETH
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            After {selectedCampaign.platformFee} ETH platform fee
+                            Net amount after the automatic 2% platform fee
                           </p>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="milestone">Approved Milestone</Label>
-                        <select
-                          id="milestone"
-                          value={selectedMilestoneId ?? ""}
-                          onChange={(e) => setSelectedMilestoneId(e.target.value === "" ? null : Number(e.target.value))}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="">Select a milestone</option>
-                          {selectedCampaign.releaseableMilestones.map((milestone) => (
-                            <option key={milestone.id} value={milestone.id}>
-                              {milestone.description} ({milestone.amount} ETH)
-                            </option>
-                          ))}
-                        </select>
+                        <Label htmlFor="withdrawAddress">Recipient ETH Address</Label>
+                        <Input
+                          id="withdrawAddress"
+                          value={withdrawAddress}
+                          onChange={(event) => setWithdrawAddress(event.target.value)}
+                          placeholder="0x..."
+                          autoComplete="off"
+                        />
                         <p className="text-xs text-gray-500">
-                          Funds are always released to the campaign creator wallet on-chain.
+                          This address will receive the creator payout in the same transaction.
                         </p>
                       </div>
 
                       <Alert className="bg-cyan-50 border-cyan-200 dark:bg-cyan-950/20 dark:border-cyan-900">
                         <AlertCircle className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
                         <AlertDescription className="text-cyan-900 dark:text-cyan-100">
-                          Only milestones with more approvals than rejections can be released.
+                          {selectedCampaign.remainingAmount} ETH is still in the contract for this campaign. The platform fee of {selectedCampaign.platformFee} ETH will be sent straight to the owner wallet, and the remaining {selectedCampaign.withdrawableAmount} ETH will be sent to the address above.
                         </AlertDescription>
                       </Alert>
 

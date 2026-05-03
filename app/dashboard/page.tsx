@@ -138,6 +138,7 @@ export default function AnalyticsDashboard() {
         const goal = parseFloat(formatEther(details[5].toString()))
         const fee = (raised * Number(platformFee)) / 100
         const creator = raised - fee
+        const status = Number(details[8]) as CampaignStatus
 
         totalRaisedAmount += raised
         totalFeesAmount += fee
@@ -149,7 +150,7 @@ export default function AnalyticsDashboard() {
           creator: details[1],
           goalAmount: formatEther(details[5].toString()),
           raisedAmount: formatEther(details[6].toString()),
-          status: details[8] as CampaignStatus,
+          status,
           isPremium: details[9],
           platformFee: fee.toFixed(4),
           creatorAmount: creator.toFixed(4),
@@ -298,13 +299,14 @@ export default function AnalyticsDashboard() {
                       <th className="text-left py-3 px-4 font-semibold text-white">Campaign</th>
                       <th className="text-right py-3 px-4 font-semibold text-white">Goal</th>
                       <th className="text-right py-3 px-4 font-semibold text-white">Raised</th>
-                      <th className="text-right py-3 px-4 font-semibold text-white">Platform Fee</th>
-                      <th className="text-right py-3 px-4 font-semibold text-white">To Creator</th>
-                      <th className="text-center py-3 px-4 font-semibold text-white">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {campaigns.map((campaign) => (
+	                      <th className="text-right py-3 px-4 font-semibold text-white">Platform Fee</th>
+	                      <th className="text-right py-3 px-4 font-semibold text-white">To Creator</th>
+	                      <th className="text-center py-3 px-4 font-semibold text-white">Status</th>
+	                      <th className="text-center py-3 px-4 font-semibold text-white">Action</th>
+	                    </tr>
+	                  </thead>
+	                  <tbody>
+	                    {campaigns.map((campaign) => (
                       <tr key={campaign.id} className="border-b border-white/15 hover:bg-white/5 transition-colors">
                         <td className="py-3 px-4">
                           <Link href={`/campaign/${campaign.id}`}>
@@ -317,15 +319,30 @@ export default function AnalyticsDashboard() {
                         <td className="text-right py-3 px-4 font-semibold text-white">{campaign.raisedAmount} ETH</td>
                         <td className="text-right py-3 px-4 text-sky-300">{campaign.platformFee} ETH</td>
                         <td className="text-right py-3 px-4 text-emerald-300 font-semibold">{campaign.creatorAmount} ETH</td>
-                        <td className="text-center py-3 px-4">
-                          <Badge className={`${getStatusColor(campaign.status)} text-white`}>
-                            {getStatusLabel(campaign.status)}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+	                        <td className="text-center py-3 px-4">
+	                          <Badge className={`${getStatusColor(campaign.status)} text-white`}>
+	                            {getStatusLabel(campaign.status)}
+	                          </Badge>
+	                        </td>
+	                        <td className="text-center py-3 px-4">
+	                          {campaign.status === CampaignStatus.Active ? (
+	                            <Link href={`/campaign/${campaign.id}#fund-campaign`}>
+	                              <Button size="sm" className="web3-button">
+	                                Fund Campaign
+	                              </Button>
+	                            </Link>
+	                          ) : (
+	                            <Link href={`/campaign/${campaign.id}`}>
+	                              <Button size="sm" variant="outline" className="web3-outline bg-transparent">
+	                                View Campaign
+	                              </Button>
+	                            </Link>
+	                          )}
+	                        </td>
+	                      </tr>
+	                    ))}
+	                  </tbody>
+	                </table>
               </div>
             )}
           </CardContent>

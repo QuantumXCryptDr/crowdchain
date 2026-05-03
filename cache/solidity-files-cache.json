@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/voidwalker19/decentralized-crowdfunding/contracts/CrowdfundingPlatform.sol": {
-      "lastModificationDate": 1775898407001,
-      "contentHash": "7d3740e72413eb768d4bdb03a253359d",
+      "lastModificationDate": 1777829311401,
+      "contentHash": "981b9a9835a356dd7a9b525acceabf19",
       "sourceName": "contracts/CrowdfundingPlatform.sol",
       "solcConfig": {
         "version": "0.8.20",

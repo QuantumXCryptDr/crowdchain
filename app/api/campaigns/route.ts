@@ -28,7 +28,10 @@ export async function GET(request: Request) {
     const contract = getReadOnlyContract()
 
     if (!contract) {
-      return NextResponse.json({ success: true, campaigns: [] })
+      return NextResponse.json(
+        { success: false, message: "Contract is not configured" },
+        { status: 500 }
+      )
     }
 
     const campaignCount = Number(await contract.campaignCounter())
