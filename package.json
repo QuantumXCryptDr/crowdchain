@@ -13,7 +13,6 @@
     "deploy:sepolia": "hardhat run scripts/deploy.cjs --network sepolia"
   },
   "dependencies": {
-    "@netlify/plugin-nextjs": "^5.15.9",
     "@openzeppelin/contracts": "^5.4.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
@@ -82,5 +81,8 @@
     "typescript": "^5.9.3",
     "viem": "^2.47.16"
   },
-  "type": "module"
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  }
 }
